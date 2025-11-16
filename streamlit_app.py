@@ -208,11 +208,18 @@ st.write("---")
 # ----------------------------------------------------------
 st.header("🚗 ריקולים שהשפיעו על מספר הרכבים הגבוה ביותר")
 
+# Find the correct MISPAR_RECHEV column name after merge
+mispar_col = None
+for col in joined.columns:
+    if "MISPAR_RECHEV" in col:
+        mispar_col = col
+        break
+
 # Check which columns exist after merge
-if "SUG_TAKALA_RC" in joined.columns and "TEUR_TAKALA_RC" in joined.columns:
+if mispar_col and "SUG_TAKALA_RC" in joined.columns and "TEUR_TAKALA_RC" in joined.columns:
     recall_counts = (
         joined.groupby(["RECALL_ID", "SUG_TAKALA_RC", "TEUR_TAKALA_RC"])
-        .agg(vehicles_affected=("MISPAR_RECHEV_PR", "count"))
+        .agg(vehicles_affected=(mispar_col, "count"))
         .sort_values("vehicles_affected", ascending=False)
         .reset_index()
     )
@@ -229,11 +236,11 @@ if "SUG_TAKALA_RC" in joined.columns and "TEUR_TAKALA_RC" in joined.columns:
         title="20 הריקולים המובילים לפי מספר רכבים מושפעים"
     )
     st.plotly_chart(fig1, use_container_width=True)
-else:
+elif mispar_col:
     # Fallback: use only RECALL_ID
     recall_counts = (
         joined.groupby("RECALL_ID")
-        .agg(vehicles_affected=("MISPAR_RECHEV_PR", "count"))
+        .agg(vehicles_affected=(mispar_col, "count"))
         .sort_values("vehicles_affected", ascending=False)
         .reset_index()
     )
@@ -248,6 +255,8 @@ else:
         title="20 הריקולים המובילים לפי מספר רכבים מושפעים"
     )
     st.plotly_chart(fig1, use_container_width=True)
+else:
+    st.error("לא נמצא עמודת MISPAR_RECHEV בנתונים המאוחדים")
 
 st.subheader("💬 הערות")
 st.text_area("הוסף הערות על ריקולים משפיעים:", key="comments_1", height=100)
