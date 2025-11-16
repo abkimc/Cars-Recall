@@ -9,6 +9,27 @@ import plotly.express as px
 # ----------------------------------------------------------
 st.set_page_config(page_title="לוח בקרה - ריקולים לרכבים", layout="wide")
 
+# Add RTL CSS for Hebrew alignment
+st.markdown("""
+<style>
+    .stApp {
+        direction: rtl;
+    }
+    .stTextInput > div > div > input {
+        direction: rtl;
+        text-align: right;
+    }
+    .stTextArea textarea {
+        direction: rtl;
+        text-align: right;
+    }
+    h1, h2, h3, h4, h5, h6, p, div, span {
+        direction: rtl;
+        text-align: right;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 st.title("📊 לוח בקרה - ריקולים לרכבים בישראל")
 st.write("נתונים חיים ישירות מ-API של נתוני הממשלה הפתוחים.")
 
@@ -74,46 +95,52 @@ with st.spinner("מוריד נתונים חיים מ-data.gov.il..."):
 st.success("הנתונים נטענו בהצלחה.")
 
 # ----------------------------------------------------------
-# CLEAN COLUMN NAMES (normalize to lowercase to match API)
+# CLEAN COLUMN NAMES (normalize to uppercase as in API)
 # ----------------------------------------------------------
-recalls.columns = recalls.columns.str.lower()
-private.columns = private.columns.str.lower()
-unattended.columns = unattended.columns.str.lower()
+recalls.columns = recalls.columns.str.upper()
+private.columns = private.columns.str.upper()
+unattended.columns = unattended.columns.str.upper()
+
+# Debug: Show available columns
+st.sidebar.write("עמודות זמינות:")
+st.sidebar.write("Recalls:", list(recalls.columns))
+st.sidebar.write("Private:", list(private.columns))
+st.sidebar.write("Unattended:", list(unattended.columns))
 
 # Hebrew column mapping
 HEBREW_COLUMNS = {
     # Unattended table
-    "mispar_rechev": "מספר רכב",
-    "recall_id": "מזהה ריקול",
-    "sug_recall": "סוג ריקול",
-    "sug_takala": "סוג תקלה",
-    "teur_takala": "תיאור תקלה",
-    "taarich_pticha": "תאריך פתיחה",
+    "MISPAR_RECHEV": "מספר רכב",
+    "RECALL_ID": "מזהה ריקול",
+    "SUG_RECALL": "סוג ריקול",
+    "SUG_TAKALA": "סוג תקלה",
+    "TEUR_TAKALA": "תיאור תקלה",
+    "TAARICH_PTICHA": "תאריך פתיחה",
     
     # Recalls table
-    "tozar_cd": "קוד יצרן",
-    "tozar_teur": "יצרן",
-    "degem": "דגם",
-    "shnat_recall": "שנת ריקול",
-    "build_begin_a": "תחילת ייצור",
-    "build_end_a": "סוף ייצור",
-    "ofen_tikun": "אופן תיקון",
-    "tkina_eu": "תקנה EU",
-    "yevuan_teur": "יבואן",
-    "telephone": "טלפון",
-    "website": "אתר",
+    "TOZAR_CD": "קוד יצרן",
+    "TOZAR_TEUR": "יצרן",
+    "DEGEM": "דגם",
+    "SHNAT_RECALL": "שנת ריקול",
+    "BUILD_BEGIN_A": "תחילת ייצור",
+    "BUILD_END_A": "סוף ייצור",
+    "OFEN_TIKUN": "אופן תיקון",
+    "TKINA_EU": "תקנה EU",
+    "YEVUAN_TEUR": "יבואן",
+    "TELEPHONE": "טלפון",
+    "WEBSITE": "אתר",
     
     # Private vehicles table
-    "tozeret_cd": "קוד יצרן",
-    "sug_degem": "סוג דגם",
-    "tozeret_nm": "יצרן",
-    "degem_cd": "קוד דגם",
-    "degem_nm": "דגם",
-    "ramat_gimur": "רמת גימור",
-    "shnat_yitzur": "שנת ייצור",
-    "tzeva_rechev": "צבע רכב",
-    "sug_delek_nm": "סוג דלק",
-    "kinuy_mishari": "כינוי מסחרי"
+    "TOZERET_CD": "קוד יצרן",
+    "SUG_DEGEM": "סוג דגם",
+    "TOZERET_NM": "יצרן",
+    "DEGEM_CD": "קוד דגם",
+    "DEGEM_NM": "דגם",
+    "RAMAT_GIMUR": "רמת גימור",
+    "SHNAT_YITZUR": "שנת ייצור",
+    "TZEVA_RECHEV": "צבע רכב",
+    "SUG_DELEK_NM": "סוג דלק",
+    "KINUY_MISHARI": "כינוי מסחרי"
 }
 
 
@@ -127,20 +154,21 @@ plate_input = st.text_input("הזן מספר רישוי (ספרות בלבד):")
 if plate_input:
     try:
         plate_num = int(plate_input.strip())
-        match = unattended[unattended["mispar_rechev"] == plate_num]
+        match = unattended[unattended["MISPAR_RECHEV"] == plate_num]
 
         if len(match) > 0:
             st.error("⚠️ לרכב שלך יש ריקול שלא טופל!")
 
             # Merge with recalls to get SUG_TAKALA and TEUR_TAKALA
             match_with_details = match.merge(
-                recalls[["recall_id", "sug_takala", "teur_takala"]],
-                on="recall_id",
+                recalls[["RECALL_ID", "SUG_TAKALA", "TEUR_TAKALA"]],
+                on="RECALL_ID",
                 how="left"
             )
 
             # Rename columns to Hebrew for display
-            display_match = match_with_details[["recall_id", "sug_recall", "sug_takala", "teur_takala", "taarich_pticha"]].copy()
+            display_cols = ["RECALL_ID", "SUG_RECALL", "SUG_TAKALA", "TEUR_TAKALA", "TAARICH_PTICHA"]
+            display_match = match_with_details[display_cols].copy()
             display_match.columns = [HEBREW_COLUMNS.get(col, col) for col in display_match.columns]
             
             st.write(display_match)
@@ -154,17 +182,19 @@ if plate_input:
 # JOIN: For later graphs
 # ----------------------------------------------------------
 # Ensure numeric
-private["mispar_rechev"] = pd.to_numeric(private["mispar_rechev"], errors="coerce")
-unattended["mispar_rechev"] = pd.to_numeric(unattended["mispar_rechev"], errors="coerce")
+private["MISPAR_RECHEV"] = pd.to_numeric(private["MISPAR_RECHEV"], errors="coerce")
+unattended["MISPAR_RECHEV"] = pd.to_numeric(unattended["MISPAR_RECHEV"], errors="coerce")
 
 # Merge by TOZERET_CD (manufacturer) and DEGEM_NM (model)
 joined = private.merge(
     recalls,
-    left_on=["tozeret_cd", "degem_nm"],
-    right_on=["tozar_cd", "degem"],
+    left_on=["TOZERET_CD", "DEGEM_NM"],
+    right_on=["TOZAR_CD", "DEGEM"],
     how="inner",
-    suffixes=("_pr", "_rc")
+    suffixes=("_PR", "_RC")
 )
+
+st.sidebar.write("Joined columns:", list(joined.columns))
 
 
 # ----------------------------------------------------------
@@ -178,25 +208,46 @@ st.write("---")
 # ----------------------------------------------------------
 st.header("🚗 ריקולים שהשפיעו על מספר הרכבים הגבוה ביותר")
 
-recall_counts = (
-    joined.groupby(["recall_id", "sug_takala_rc", "teur_takala_rc"])
-    .agg(vehicles_affected=("mispar_rechev_pr", "count"))
-    .sort_values("vehicles_affected", ascending=False)
-    .reset_index()
-)
-
-# Rename for display
-recall_counts_display = recall_counts.head(20).copy()
-recall_counts_display.columns = ["מזהה ריקול", "סוג תקלה", "תיאור תקלה", "מספר רכבים מושפעים"]
-
-fig1 = px.bar(
-    recall_counts_display,
-    x="מזהה ריקול",
-    y="מספר רכבים מושפעים",
-    hover_data=["סוג תקלה", "תיאור תקלה"],
-    title="20 הריקולים המובילים לפי מספר רכבים מושפעים"
-)
-st.plotly_chart(fig1, use_container_width=True)
+# Check which columns exist after merge
+if "SUG_TAKALA_RC" in joined.columns and "TEUR_TAKALA_RC" in joined.columns:
+    recall_counts = (
+        joined.groupby(["RECALL_ID", "SUG_TAKALA_RC", "TEUR_TAKALA_RC"])
+        .agg(vehicles_affected=("MISPAR_RECHEV_PR", "count"))
+        .sort_values("vehicles_affected", ascending=False)
+        .reset_index()
+    )
+    
+    # Rename for display
+    recall_counts_display = recall_counts.head(20).copy()
+    recall_counts_display.columns = ["מזהה ריקול", "סוג תקלה", "תיאור תקלה", "מספר רכבים מושפעים"]
+    
+    fig1 = px.bar(
+        recall_counts_display,
+        x="מזהה ריקול",
+        y="מספר רכבים מושפעים",
+        hover_data=["סוג תקלה", "תיאור תקלה"],
+        title="20 הריקולים המובילים לפי מספר רכבים מושפעים"
+    )
+    st.plotly_chart(fig1, use_container_width=True)
+else:
+    # Fallback: use only RECALL_ID
+    recall_counts = (
+        joined.groupby("RECALL_ID")
+        .agg(vehicles_affected=("MISPAR_RECHEV_PR", "count"))
+        .sort_values("vehicles_affected", ascending=False)
+        .reset_index()
+    )
+    
+    recall_counts_display = recall_counts.head(20).copy()
+    recall_counts_display.columns = ["מזהה ריקול", "מספר רכבים מושפעים"]
+    
+    fig1 = px.bar(
+        recall_counts_display,
+        x="מזהה ריקול",
+        y="מספר רכבים מושפעים",
+        title="20 הריקולים המובילים לפי מספר רכבים מושפעים"
+    )
+    st.plotly_chart(fig1, use_container_width=True)
 
 st.subheader("💬 הערות")
 st.text_area("הוסף הערות על ריקולים משפיעים:", key="comments_1", height=100)
@@ -209,11 +260,11 @@ st.write("---")
 # ----------------------------------------------------------
 st.header("📈 ריקולים לאורך זמן לפי יצרן")
 
-if "shnat_recall" in recalls.columns:
-    recalls["shnat_recall"] = pd.to_numeric(recalls["shnat_recall"], errors="coerce")
+if "SHNAT_RECALL" in recalls.columns:
+    recalls["SHNAT_RECALL"] = pd.to_numeric(recalls["SHNAT_RECALL"], errors="coerce")
 
 trend = (
-    recalls.groupby(["shnat_recall", "tozar_teur"])
+    recalls.groupby(["SHNAT_RECALL", "TOZAR_TEUR"])
     .size()
     .reset_index(name="count")
 )
@@ -243,12 +294,12 @@ st.write("---")
 st.header("🏭 ביצועי יבואנים - אחוזי טיפול בריקולים")
 
 total_affected = (
-    joined.groupby("recall_id")
-    .agg(total=("mispar_rechev_pr", "count"))
+    joined.groupby("RECALL_ID")
+    .agg(total=("MISPAR_RECHEV_PR", "count"))
 )
 
 unattended_count = (
-    unattended.groupby("recall_id")
+    unattended.groupby("RECALL_ID")
     .size()
     .to_frame("unattended")
 )
@@ -260,12 +311,12 @@ performance["attendance_rate"] = (
 
 # Join importer
 performance = performance.merge(
-    recalls[["recall_id", "yevuan_teur"]],
-    on="recall_id",
+    recalls[["RECALL_ID", "YEVUAN_TEUR"]],
+    on="RECALL_ID",
     how="left"
 )
 
-perf_by_importer = performance.groupby("yevuan_teur")["attendance_rate"].mean().reset_index()
+perf_by_importer = performance.groupby("YEVUAN_TEUR")["attendance_rate"].mean().reset_index()
 perf_by_importer.columns = ["יבואן", "אחוז ממוצע של טיפול בריקולים"]
 
 fig3 = px.bar(
@@ -287,8 +338,8 @@ st.write("---")
 # ----------------------------------------------------------
 st.header("⚠️ התפלגות סוגי ריקולים (חומרה)")
 
-if "sug_takala" in recalls.columns:
-    severity_dist = recalls["sug_takala"].value_counts().reset_index()
+if "SUG_TAKALA" in recalls.columns:
+    severity_dist = recalls["SUG_TAKALA"].value_counts().reset_index()
     severity_dist.columns = ["סוג תקלה", "מספר ריקולים"]
     
     fig4 = px.bar(
@@ -299,7 +350,7 @@ if "sug_takala" in recalls.columns:
     )
     st.plotly_chart(fig4, use_container_width=True)
 else:
-    st.warning("השדה sug_takala לא נמצא בנתוני ה-API.")
+    st.warning("השדה SUG_TAKALA לא נמצא בנתוני ה-API.")
 
 st.subheader("💬 הערות")
 st.text_area("הוסף הערות על חומרת ריקולים:", key="comments_4", height=100)
