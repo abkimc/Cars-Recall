@@ -154,28 +154,42 @@ plate_input = st.text_input("הזן מספר רישוי (ספרות בלבד):")
 if plate_input:
     try:
         plate_num = int(plate_input.strip())
+        
+        # Convert MISPAR_RECHEV to numeric if not already
+        unattended["MISPAR_RECHEV"] = pd.to_numeric(unattended["MISPAR_RECHEV"], errors="coerce")
+        
         match = unattended[unattended["MISPAR_RECHEV"] == plate_num]
 
         if len(match) > 0:
             st.error("⚠️ לרכב שלך יש ריקול שלא טופל!")
 
-            # Merge with recalls to get SUG_TAKALA and TEUR_TAKALA
-            match_with_details = match.merge(
-                recalls[["RECALL_ID", "SUG_TAKALA", "TEUR_TAKALA"]],
-                on="RECALL_ID",
-                how="left"
-            )
+            # Get available columns
+            available_cols = list(match.columns)
+            st.write(f"עמודות זמינות: {available_cols}")
+            
+            # Merge with recalls to get SUG_TAKALA and TEUR_TAKALA if they exist
+            if "RECALL_ID" in match.columns and "RECALL_ID" in recalls.columns:
+                match_with_details = match.merge(
+                    recalls[["RECALL_ID", "SUG_TAKALA", "TEUR_TAKALA"]],
+                    on="RECALL_ID",
+                    how="left"
+                )
+            else:
+                match_with_details = match
 
-            # Rename columns to Hebrew for display
-            display_cols = ["RECALL_ID", "SUG_RECALL", "SUG_TAKALA", "TEUR_TAKALA", "TAARICH_PTICHA"]
-            display_match = match_with_details[display_cols].copy()
+            # Show all available data
+            st.write("פרטי הריקול:")
+            
+            # Create display dataframe with Hebrew column names
+            display_match = match_with_details.copy()
             display_match.columns = [HEBREW_COLUMNS.get(col, col) for col in display_match.columns]
             
-            st.write(display_match)
+            st.dataframe(display_match)
         else:
             st.success("✔️ הרכב שלך לא מופיע במאגר הריקולים שלא טופלו.")
-    except:
-        st.error("מספר לא תקין.")
+    except Exception as e:
+        st.error(f"שגיאה: {str(e)}")
+        st.write(f"ניסית להזין: {plate_input}")
 
 
 # ----------------------------------------------------------
