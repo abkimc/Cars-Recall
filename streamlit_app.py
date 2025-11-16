@@ -90,22 +90,6 @@ HEBREW_COLUMNS = {
     "TAARICH_PTICHA": "תאריך פתיחה",
 }
 
-# CSS for RTL alignment
-st.markdown("""
-<style>
-    .dataframe {
-        direction: rtl;
-        text-align: right;
-    }
-    .dataframe th {
-        text-align: right !important;
-    }
-    .dataframe td {
-        text-align: right !important;
-    }
-</style>
-""", unsafe_allow_html=True)
-
 
 # ----------------------------------------------------------
 # PLATE LOOKUP TOOL
@@ -134,7 +118,25 @@ if plate_input:
             display_match = match_with_details[display_cols].copy()
             display_match.columns = [HEBREW_COLUMNS.get(col, col) for col in display_match.columns]
             
-            st.dataframe(display_match, use_container_width=True)
+            # Style the dataframe for RTL
+            th_props = [
+                ('text-align', 'right'),
+                ('direction', 'rtl')
+            ]
+            
+            td_props = [
+                ('text-align', 'right'),
+                ('direction', 'rtl')
+            ]
+            
+            styles = [
+                dict(selector="th", props=th_props),
+                dict(selector="td", props=td_props)
+            ]
+            
+            styled_df = display_match.style.set_properties(**{'text-align': 'right', 'direction': 'rtl'}).set_table_styles(styles)
+            
+            st.table(styled_df)
         else:
             st.success("✔️ הרכב שלך לא מופיע במאגר הריקולים שלא טופלו.")
     except Exception as e:
