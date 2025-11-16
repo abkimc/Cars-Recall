@@ -302,39 +302,42 @@ st.write("---")
 # ----------------------------------------------------------
 st.header("🏭 ביצועי יבואנים - אחוזי טיפול בריקולים")
 
-total_affected = (
-    joined.groupby("RECALL_ID")
-    .agg(total=("MISPAR_RECHEV_PR", "count"))
-)
+if mispar_col:
+    total_affected = (
+        joined.groupby("RECALL_ID")
+        .agg(total=(mispar_col, "count"))
+    )
 
-unattended_count = (
-    unattended.groupby("RECALL_ID")
-    .size()
-    .to_frame("unattended")
-)
+    unattended_count = (
+        unattended.groupby("RECALL_ID")
+        .size()
+        .to_frame("unattended")
+    )
 
-performance = total_affected.join(unattended_count, how="left").fillna(0)
-performance["attendance_rate"] = (
-    (1 - performance["unattended"] / performance["total"]) * 100
-)
+    performance = total_affected.join(unattended_count, how="left").fillna(0)
+    performance["attendance_rate"] = (
+        (1 - performance["unattended"] / performance["total"]) * 100
+    )
 
-# Join importer
-performance = performance.merge(
-    recalls[["RECALL_ID", "YEVUAN_TEUR"]],
-    on="RECALL_ID",
-    how="left"
-)
+    # Join importer
+    performance = performance.merge(
+        recalls[["RECALL_ID", "YEVUAN_TEUR"]],
+        on="RECALL_ID",
+        how="left"
+    )
 
-perf_by_importer = performance.groupby("YEVUAN_TEUR")["attendance_rate"].mean().reset_index()
-perf_by_importer.columns = ["יבואן", "אחוז ממוצע של טיפול בריקולים"]
+    perf_by_importer = performance.groupby("YEVUAN_TEUR")["attendance_rate"].mean().reset_index()
+    perf_by_importer.columns = ["יבואן", "אחוז ממוצע של טיפול בריקולים"]
 
-fig3 = px.bar(
-    perf_by_importer,
-    x="יבואן",
-    y="אחוז ממוצע של טיפול בריקולים",
-    title="ביצועי יבואנים (אחוז ממוצע של טיפול בריקולים)"
-)
-st.plotly_chart(fig3, use_container_width=True)
+    fig3 = px.bar(
+        perf_by_importer,
+        x="יבואן",
+        y="אחוז ממוצע של טיפול בריקולים",
+        title="ביצועי יבואנים (אחוז ממוצע של טיפול בריקולים)"
+    )
+    st.plotly_chart(fig3, use_container_width=True)
+else:
+    st.error("לא ניתן לחשב ביצועי יבואנים - חסרה עמודת MISPAR_RECHEV")
 
 st.subheader("💬 הערות")
 st.text_area("הוסף הערות על ביצועי יבואנים:", key="comments_3", height=100)
