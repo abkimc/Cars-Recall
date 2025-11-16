@@ -27,9 +27,7 @@ API_BASE = "https://data.gov.il/api/3/action/datastore_search"
 # ----------------------------------------------------------
 @st.cache_data(show_spinner=True)
 def fetch_full_table(resource_id, max_rows=50000):
-    """
-    Fetches up to max_rows rows from the CKAN API with pagination.
-    """
+    """Fetches up to max_rows rows from the CKAN API with pagination."""
     all_records = []
     limit = 5000
     offset = 0
@@ -65,8 +63,6 @@ def fetch_full_table(resource_id, max_rows=50000):
 # ----------------------------------------------------------
 # LOAD DATA (LIMITED FOR STREAMLIT PERFORMANCE)
 # ----------------------------------------------------------
-MAX_ROWS = 50000  # you can increase if needed
-
 st.sidebar.header("⚙️ Settings")
 MAX_ROWS = st.sidebar.slider("Maximum rows to fetch per table:", 5000, 150000, 50000)
 
@@ -99,7 +95,15 @@ if plate_input:
 
         if len(match) > 0:
             st.error("⚠️ Your vehicle HAS an unattended recall.")
-            st.write(match[["RECALL_ID", "SUG_RECALL", "TAARICH_PTICHA"]])
+
+            # Merge with recalls to get SUG_TAKALA and TEUR_TAKALA
+            match_with_details = match.merge(
+                recalls[["RECALL_ID", "SUG_TAKALA", "TEUR_TAKALA"]],
+                on="RECALL_ID",
+                how="left"
+            )
+
+            st.write(match_with_details[["RECALL_ID", "SUG_RECALL", "SUG_TAKALA", "TEUR_TAKALA", "TAARICH_PTICHA"]])
         else:
             st.success("✔️ Your vehicle is NOT listed in the unattended recall database.")
     except:
@@ -109,12 +113,11 @@ if plate_input:
 # ----------------------------------------------------------
 # JOIN: For later graphs
 # ----------------------------------------------------------
-
 # Ensure numeric
-private["MISPARED"] = pd.to_numeric(private["MISPAR_RECHEV"], errors="coerce")
+private["MISPAR_RECHEV"] = pd.to_numeric(private["MISPAR_RECHEV"], errors="coerce")
 unattended["MISPAR_RECHEV"] = pd.to_numeric(unattended["MISPAR_RECHEV"], errors="coerce")
 
-# Basic join by model manufacturer & degem, ignoring build-year for simplicity
+# Merge by TOZERET_CD (manufacturer) and DEGEM_NM (model)
 joined = private.merge(
     recalls,
     left_on=["TOZERET_CD", "DEGEM_NM"],
@@ -142,7 +145,7 @@ with tab1:
     st.subheader("🚗 Recalls That Affected the Most Vehicles")
 
     recall_counts = (
-        joined.groupby("RECALL_ID")
+        joined.groupby(["RECALL_ID", "SUG_TAKALA_RC", "TEUR_TAKALA_RC"])
         .agg(vehicles_affected=("MISPAR_RECHEV_PR", "count"))
         .sort_values("vehicles_affected", ascending=False)
         .reset_index()
@@ -152,6 +155,7 @@ with tab1:
         recall_counts.head(20),
         x="RECALL_ID",
         y="vehicles_affected",
+        hover_data=["SUG_TAKALA_RC", "TEUR_TAKALA_RC"],
         title="Top Recalls by Number of Affected Vehicles"
     )
     st.plotly_chart(fig, use_container_width=True)
