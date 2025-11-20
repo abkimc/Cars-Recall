@@ -10,18 +10,17 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;700;900&display=swap" rel="stylesheet">
     
-    <!-- Tailwind CSS Framework -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- CSV Parser Library -->
+    <!-- PapaParse -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
     <style>
         body { font-family: 'Rubik', sans-serif; }
         
-        /* --- Israeli License Plate Component --- */
         .il-plate-container {
-            background-color: #FFCC00; /* The Standard Yellow */
+            background-color: #FFCC00;
             border: 2px solid #333;
             border-radius: 8px;
             position: relative;
@@ -34,11 +33,6 @@
             transition: transform 0.2s;
         }
         
-        .il-plate-container:focus-within {
-            transform: scale(1.02);
-            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
-        }
-
         .il-blue-strip {
             background-color: #003399;
             width: 45px;
@@ -52,63 +46,37 @@
             color: white;
             font-size: 11px;
             font-weight: bold;
-            position: absolute;
-            left: 0; 
-            top: 0;
-            z-index: 10;
+            position: absolute; left: 0; top: 0; z-index: 10;
         }
 
         .il-input {
-            background: transparent;
-            border: none;
-            width: 100%;
-            height: 100%;
-            text-align: center;
-            font-size: 2.5rem;
-            font-weight: 900;
-            color: #333;
-            letter-spacing: 4px;
-            outline: none;
-            padding-left: 50px;
+            background: transparent; border: none; width: 100%; height: 100%;
+            text-align: center; font-size: 2.5rem; font-weight: 900; color: #333;
+            letter-spacing: 4px; outline: none; padding-left: 50px;
             font-family: 'Rubik', sans-serif;
         }
+        
+        /* Remove spinner from inputs */
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
-        /* Hide spinner in input numbers */
-        input::-webkit-outer-spin-button,
-        input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-
-        /* Loading Spinner */
         .loader {
-            border: 3px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top: 3px solid #fff;
-            width: 20px;
-            height: 20px;
-            animation: spin 1s linear infinite;
-            margin-left: 8px;
-            display: inline-block;
+            border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 3px solid #fff;
+            width: 20px; height: 20px; animation: spin 1s linear infinite;
+            display: inline-block; margin-left: 8px;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        /* Animation for results */
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
 
-    <!-- HERO SECTION -->
     <header class="bg-white shadow-sm pt-12 pb-16 px-4 text-center relative overflow-hidden">
         <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600"></div>
         
-        <h1 class="text-4xl md:text-5xl font-black text-slate-900 mb-4 tracking-tight">
-            האם הרכב שלך בטוח?
-        </h1>
-        <p class="text-xl text-slate-600 mb-10 max-w-2xl mx-auto font-light">
-            בדיקה מהירה במאגר משרד התחבורה לאיתור קריאות שירות (Recall) פתוחות.
-        </p>
+        <h1 class="text-4xl md:text-5xl font-black text-slate-900 mb-4 tracking-tight">האם הרכב שלך בטוח?</h1>
+        <p class="text-xl text-slate-600 mb-10 max-w-2xl mx-auto font-light">בדיקה מהירה במאגר משרד התחבורה לאיתור קריאות שירות (Recall).</p>
 
-        <!-- Input Area -->
         <div class="mb-8">
             <div class="il-plate-container">
                 <div class="il-blue-strip">
@@ -121,63 +89,36 @@
             <p class="text-sm text-gray-400 mt-2">הזן מספר רכב (7 או 8 ספרות)</p>
         </div>
 
-        <button id="searchBtn" onclick="checkCar()" class="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold py-3 px-10 rounded-full shadow-lg shadow-blue-500/30 transition-all transform hover:-translate-y-1 text-lg flex items-center justify-center mx-auto">
+        <button id="searchBtn" onclick="checkCar()" class="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold py-3 px-10 rounded-full shadow-lg transition-all transform hover:-translate-y-1 text-lg flex items-center justify-center mx-auto">
             בדיקת רכב 
         </button>
 
-        <!-- RESULT AREA -->
-        <div id="resultArea" class="mt-10 max-w-3xl mx-auto hidden transition-all duration-500 ease-in-out">
-            <!-- Content injected via JS -->
-        </div>
+        <div id="resultArea" class="mt-10 max-w-3xl mx-auto hidden transition-all duration-500 ease-in-out"></div>
     </header>
 
-    <!-- INFO / GRAPHS SECTION -->
     <main class="max-w-5xl mx-auto px-4 py-12 space-y-20">
         <div class="text-center">
             <h2 class="text-3xl font-bold text-slate-900">נתונים מהשטח</h2>
             <div class="w-16 h-1.5 bg-blue-600 mx-auto mt-4 rounded-full"></div>
-            <p class="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
-                מתוך עשרות אלפי רשומות, אנו מציגים את הנתונים העדכניים ביותר על תקלות בטיחות בישראל.
-            </p>
+            <p class="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">מתוך עשרות אלפי רשומות פעילות.</p>
         </div>
-
         <div class="grid md:grid-cols-2 gap-8">
-            <!-- Placeholder Graph 1 -->
-            <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-100">
-                <div class="h-64 bg-slate-100 rounded-xl flex items-center justify-center mb-4 text-slate-400 relative overflow-hidden">
-                    <!-- Uncomment line below to add image -->
-                    <!-- <img src="assets/graph1.png" class="object-contain h-full w-full"> -->
-                    <span class="text-6xl opacity-20">📊</span>
-                </div>
-                <h3 class="text-xl font-bold text-slate-800 mb-2">היצרנים עם הכי הרבה קריאות</h3>
-                <p class="text-slate-600 text-sm leading-relaxed">
-                    הגרף מציג את התפלגות הקריאות הפתוחות לפי יצרן. (כאן תוכל להוסיף תמונה של הגרף שיצרת).
-                </p>
+            <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-100 text-center">
+                <div class="h-64 bg-slate-100 rounded-xl flex items-center justify-center mb-4"><span class="text-6xl opacity-20">📊</span></div>
+                <h3 class="text-xl font-bold text-slate-800">יצרנים מובילים</h3>
             </div>
-
-            <!-- Placeholder Graph 2 -->
-            <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-100">
-                <div class="h-64 bg-slate-100 rounded-xl flex items-center justify-center mb-4 text-slate-400 relative overflow-hidden">
-                    <!-- Uncomment line below to add image -->
-                    <!-- <img src="assets/graph2.png" class="object-contain h-full w-full"> -->
-                    <span class="text-6xl opacity-20">📉</span>
-                </div>
-                <h3 class="text-xl font-bold text-slate-800 mb-2">סוגי תקלות נפוצים</h3>
-                <p class="text-slate-600 text-sm leading-relaxed">
-                    האם הבעיה היא בכריות האוויר או במנוע? ניתוח סוגי התקלות הנפוצים ביותר בישראל.
-                </p>
+            <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-100 text-center">
+                <div class="h-64 bg-slate-100 rounded-xl flex items-center justify-center mb-4"><span class="text-6xl opacity-20">📉</span></div>
+                <h3 class="text-xl font-bold text-slate-800">סוגי תקלות</h3>
             </div>
         </div>
     </main>
 
     <footer class="bg-slate-900 text-slate-400 text-center py-8 mt-12 border-t border-slate-800">
         <p class="text-sm">המידע מבוסס על מאגר המידע הממשלתי (Data.gov.il).</p>
-        <p class="text-xs mt-2 opacity-50">פותח כשירות לציבור. אין לראות במידע זה ייעוץ משפטי או מקצועי.</p>
     </footer>
 
-    <!-- JAVASCRIPT LOGIC -->
     <script>
-        // Cache to ensure we don't download files twice
         const dataCache = {};
 
         function checkCar() {
@@ -185,80 +126,88 @@
             const resultDiv = document.getElementById('resultArea');
             const btn = document.getElementById('searchBtn');
             
-            // 1. Clean Input (Remove spaces/dashes)
-            const input = inputField.value.replace(/[^0-9]/g, '').trim(); 
+            let input = inputField.value.replace(/[^0-9]/g, '').trim();
             
-            // Reset UI
             resultDiv.innerHTML = '';
             resultDiv.classList.add('hidden');
 
-            // Basic Validation
             if(!input || input.length < 6) {
-                alert('נא להזין מספר רכב תקין (לפחות 6 ספרות)');
+                alert('נא להזין מספר רכב תקין');
                 return;
             }
 
-            // UI Loading State
+            // --- YOUR REQUEST: FORCE 8 DIGITS (ADD LEADING ZERO) ---
+            // We convert to 8 digits for consistency, but we will compare nicely later.
+            if (input.length === 7) {
+                console.log("Detecting 7 digit plate. Adding leading zero internally.");
+                input = "0" + input;
+            }
+            // -------------------------------------------------------
+
             const originalBtnText = btn.innerText;
             btn.innerHTML = '<div class="loader"></div> טוען...';
             btn.disabled = true;
             inputField.disabled = true;
 
-            // 2. Determine File (Split strategy)
-            // Note: last digit is same for 1234567 and 01234567, so file load is safe
             const lastDigit = input.slice(-1);
             const fileName = `split_data/data_${lastDigit}.csv`;
 
-            console.log(`Searching for: ${input} in file: ${fileName}`);
+            console.log(`Searching for: ${input} (Last digit: ${lastDigit})`);
+            console.log(`File to load: ${fileName}`);
 
-            // Function to restore button state
             const resetUI = () => {
                 btn.innerText = "בדיקת רכב";
                 btn.disabled = false;
                 inputField.disabled = false;
             };
 
-            // 3. Process Logic
             const processData = (data) => {
                 if (!data || data.length === 0) {
-                    console.error("CSV File was empty");
-                    alert("שגיאה בקריאת הנתונים");
+                    console.error("File is empty");
+                    alert("שגיאה: קובץ הנתונים ריק");
                     resetUI();
                     return;
                 }
 
-                // --- SMART COLUMN DETECTION ---
+                // 1. Find Headers (ignoring BOM invisible characters)
                 const firstRow = data[0];
                 const keys = Object.keys(firstRow);
-                
                 const plateKey = keys.find(k => k.includes('MISPAR_RECHEV'));
-                const recallTypeKey = keys.find(k => k.includes('SUG_RECALL')) || 'SUG_RECALL';
+                
+                // Fallback keys
+                const recallTypeKey = keys.find(k => k.includes('SUG_RECALL')) || keys.find(k => k.includes('SUG_RECALL_OT')) || 'SUG_RECALL';
                 const issueKey = keys.find(k => k.includes('TEUR_TAKALA')) || keys.find(k => k.includes('SUG_TAKALA')) || 'TEUR_TAKALA';
                 const dateKey = keys.find(k => k.includes('TAARICH_PTICHA')) || 'TAARICH_PTICHA';
 
                 if (!plateKey) {
-                    console.error("Critical Error: Could not identify Plate Number column in:", keys);
-                    alert("שגיאה במבנה הנתונים. נא לפתוח F12 ולבדוק בקונסול.");
+                    console.error("Column 'MISPAR_RECHEV' not found. Keys are:", keys);
+                    alert("שגיאה: לא ניתן למצוא את עמודת מספר הרכב בקובץ.");
                     resetUI();
                     return;
                 }
 
-                // --- FILTERING FIX: HANDLE LEADING ZERO ---
+                // 2. FILTERING - The Bulletproof Logic
+                // We compare parsed Integers. This means 1000811 == 01000811.
+                const searchInt = parseInt(input, 10); // Turn input "01000811" into number 1000811
+
                 const foundVehicles = data.filter(row => {
-                    const rowPlate = String(row[plateKey] || '').trim();
+                    const rowVal = row[plateKey];
+                    if(!rowVal) return false;
                     
-                    // The Fix: Match input EXACTLY OR input with '0' at start
-                    return rowPlate === input || rowPlate === '0' + input;
+                    // Turn CSV value into number
+                    const rowInt = parseInt(String(rowVal).trim(), 10);
+                    
+                    // Compare numbers
+                    return rowInt === searchInt;
                 });
 
-                // Render
+                console.log(`Found ${foundVehicles.length} matches for ${searchInt}`);
+
                 renderResults(foundVehicles, input, { recallTypeKey, issueKey, dateKey });
                 resetUI();
             };
 
-            // 4. Check Cache or Fetch
             if (dataCache[lastDigit]) {
-                console.log("Using cached data");
                 processData(dataCache[lastDigit]);
             } else {
                 Papa.parse(fileName, {
@@ -270,8 +219,8 @@
                         processData(results.data);
                     },
                     error: function(err) {
-                        console.error("Network/Parse Error:", err);
-                        alert('לא ניתן לטעון את קובץ הנתונים. וודא שתיקיית split_data קיימת ב-GitHub.');
+                        console.error("Error loading CSV:", err);
+                        alert('שגיאה בטעינת הנתונים (בדוק שהקובץ קיים בגיטהאב)');
                         resetUI();
                     }
                 });
@@ -283,7 +232,6 @@
             resultDiv.classList.remove('hidden');
 
             if(foundVehicles.length > 0) {
-                // --- BAD NEWS (Recall Found) ---
                 let html = `
                     <div class="bg-red-50 border-2 border-red-100 rounded-2xl p-6 md:p-8 text-right shadow-xl animate-fade-in">
                         <div class="flex items-center mb-4 border-b border-red-100 pb-4">
@@ -293,13 +241,12 @@
                                 <p class="text-red-600 text-sm">רכב מספר: <span class="font-mono font-bold text-lg">${input}</span></p>
                             </div>
                         </div>
-                        
                         <div class="overflow-x-auto">
                             <table class="min-w-full text-right">
                                 <thead class="text-xs text-red-500 uppercase bg-red-100/50 rounded">
                                     <tr>
-                                        <th class="px-4 py-3 rounded-r">סוג ריקול</th>
-                                        <th class="px-4 py-3">מהות התקלה</th>
+                                        <th class="px-4 py-3 rounded-r">סוג</th>
+                                        <th class="px-4 py-3">פירוט תקלה</th>
                                         <th class="px-4 py-3 rounded-l">תאריך</th>
                                     </tr>
                                 </thead>
@@ -316,35 +263,21 @@
                     `;
                 });
 
-                html += `
-                                </tbody>
-                            </table>
-                        </div>
+                html += `</tbody></table></div>
                         <div class="mt-6 bg-white p-4 rounded-xl border border-red-100 flex items-start gap-3">
                             <span class="text-xl">📞</span>
-                            <p class="text-sm text-slate-600 leading-snug">
-                                <strong>מה עושים עכשיו?</strong><br>
-                                חובה לגשת למוסך היבואן לתיקון התקלה (התיקון בדרך כלל ללא עלות). לא ניתן לעבור טסט שנתי עם ריקול פתוח מעל 6 חודשים.
-                            </p>
+                            <p class="text-sm text-slate-600 leading-snug"><strong>גש למוסך היבואן לטיפול בהקדם.</strong></p>
                         </div>
-                    </div>
-                `;
+                    </div>`;
                 resultDiv.innerHTML = html;
-
             } else {
-                // --- GOOD NEWS (No Recall) ---
                 resultDiv.innerHTML = `
                     <div class="bg-emerald-50 border-2 border-emerald-100 rounded-2xl p-8 text-center shadow-xl animate-fade-in">
                         <div class="bg-emerald-100 w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4">
                             <span class="text-4xl">✅</span>
                         </div>
                         <h3 class="font-black text-2xl text-emerald-800 mb-2">הכל תקין!</h3>
-                        <p class="text-emerald-700 text-lg mb-4">
-                            לא נמצאו קריאות שירות פתוחות לרכב מספר <strong class="font-mono">${input}</strong>.
-                        </p>
-                        <p class="text-xs text-emerald-600/60">
-                            * הנתונים נכונים למועד עדכון המאגר האחרון. ט.ל.ח
-                        </p>
+                        <p class="text-emerald-700 text-lg">לא נמצאו קריאות שירות פתוחות לרכב <strong class="font-mono">${input}</strong>.</p>
                     </div>
                 `;
             }
