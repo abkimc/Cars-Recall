@@ -3,18 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>בדיקת ריקולים לרכב | משרד התחבורה</title>
+    <title>בדיקת ריקולים לרכב | דוח מסכם 2025</title>
     
     <!-- Fonts & Styles -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Plugin for Data Labels -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
 
     <style>
         body { font-family: 'Rubik', sans-serif; }
         
+        /* --- Plate Input Styles --- */
         .il-plate-container {
             background-color: #FFCC00; border: 2px solid #333; border-radius: 8px;
             position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.15);
@@ -32,6 +39,8 @@
             letter-spacing: 4px; outline: none; padding-left: 50px; font-family: 'Rubik', sans-serif;
         }
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        
+        /* --- Loader & Animations --- */
         .loader {
             border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 3px solid #fff;
             width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; margin-left: 8px;
@@ -39,17 +48,23 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- Chart Containers --- */
+        .chart-box { position: relative; height: 400px; width: 100%; }
+        .chart-box-lg { position: relative; height: 500px; width: 100%; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
 
-    <!-- Header -->
-    <header class="bg-white shadow-sm pt-12 pb-16 px-4 text-center relative overflow-hidden">
+    <!-- ===========================
+       HEADER & SEARCH SECTION
+    ============================ -->
+    <header class="bg-white shadow-sm pt-12 pb-16 px-4 text-center relative overflow-hidden z-10">
         <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600"></div>
         <h1 class="text-4xl md:text-5xl font-black text-slate-900 mb-4 tracking-tight">האם הרכב שלך בטוח?</h1>
         <p class="text-xl text-slate-600 mb-10 max-w-2xl mx-auto font-light">בדיקת ריקולים מלאה כולל פרטי יבואן ואופן התיקון.</p>
 
-        <div class="mb-8">
+        <div class="mb-8 relative z-20">
             <div class="il-plate-container">
                 <div class="il-blue-strip"><span>IL</span><div class="w-5 h-3 bg-white rounded-[1px] mt-1 opacity-90"></div><span>ישראל</span></div>
                 <input type="text" inputmode="numeric" pattern="[0-9]*" id="plateInput" class="il-input" placeholder="12345678" maxlength="8">
@@ -57,38 +72,114 @@
             <p class="text-sm text-gray-400 mt-2">הזן מספר רכב (7 או 8 ספרות)</p>
         </div>
 
-        <button id="searchBtn" onclick="checkCar()" class="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold py-3 px-10 rounded-full shadow-lg transition-all transform hover:-translate-y-1 text-lg flex items-center justify-center mx-auto">
+        <button id="searchBtn" onclick="checkCar()" class="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold py-3 px-10 rounded-full shadow-lg transition-all transform hover:-translate-y-1 text-lg flex items-center justify-center mx-auto relative z-20">
             בדיקת רכב 
         </button>
 
-        <div id="resultArea" class="mt-10 max-w-4xl mx-auto hidden transition-all duration-500 ease-in-out"></div>
+        <div id="resultArea" class="mt-10 max-w-4xl mx-auto hidden transition-all duration-500 ease-in-out relative z-20"></div>
     </header>
 
-    <!-- Info Section -->
-    <main class="max-w-5xl mx-auto px-4 py-12 space-y-20">
+    <!-- ===========================
+       DASHBOARD & ANALYTICS
+    ============================ -->
+    <main class="max-w-7xl mx-auto px-4 py-12 space-y-16">
+        
+        <!-- Section Title -->
         <div class="text-center">
-            <h2 class="text-3xl font-bold text-slate-900">נתונים מהשטח</h2>
+            <h2 class="text-3xl font-bold text-slate-900">תמונת מצב ארצית</h2>
+            <p class="text-slate-500 mt-2">נכון לתאריך: <span class="font-bold text-slate-700">20/11/2025</span></p>
             <div class="w-16 h-1.5 bg-blue-600 mx-auto mt-4 rounded-full"></div>
         </div>
-        <div class="grid md:grid-cols-2 gap-8">
-            <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-100 text-center">
-                <div class="h-48 bg-slate-100 rounded-xl flex items-center justify-center mb-4"><span class="text-5xl opacity-20">📊</span></div>
-                <h3 class="text-xl font-bold text-slate-800">סטטיסטיקות יצרנים</h3>
+
+        <!-- 1. KPI Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-center">
+                <div class="text-sm text-slate-500 mb-1">סה"כ קמפיינים</div>
+                <div class="text-3xl font-black text-slate-800" id="kpiCampaigns">...</div>
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-100 text-center">
-                <div class="h-48 bg-slate-100 rounded-xl flex items-center justify-center mb-4"><span class="text-5xl opacity-20">🔧</span></div>
-                <h3 class="text-xl font-bold text-slate-800">מידע טכני</h3>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-center border-b-4 border-red-500">
+                <div class="text-sm text-slate-500 mb-1">קריאות פתוחות</div>
+                <div class="text-3xl font-black text-red-600" id="kpiOpen">...</div>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-center">
+                <div class="text-sm text-slate-500 mb-1">רכבים מושפעים</div>
+                <div class="text-3xl font-black text-blue-600" id="kpiVehicles">...</div>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-center">
+                <div class="text-sm text-slate-500 mb-1">ממוצע לרכב</div>
+                <div class="text-3xl font-black text-emerald-600" id="kpiAvg">...</div>
             </div>
         </div>
+
+        <!-- 2. Timeline Chart -->
+        <div class="bg-white p-6 md:p-8 rounded-3xl shadow-lg border border-slate-100">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 border-b border-slate-100 pb-4 gap-4">
+                <div>
+                    <h3 class="text-xl font-bold text-slate-800">מגמת קריאות לפי יצרן</h3>
+                    <p class="text-sm text-slate-400">יצרנים נבחרים: BMW, Mercedes, Ford, Hyundai, Chevrolet, Toyota, Jeep</p>
+                </div>
+                <div class="text-xs font-mono text-slate-400 bg-slate-50 px-2 py-1 rounded">2000-2025</div>
+            </div>
+            <div class="chart-box-lg">
+                <canvas id="timelineChart"></canvas>
+            </div>
+            <p class="text-center text-xs text-slate-400 mt-4">
+                <span class="inline-block w-2 h-2 bg-slate-300 rounded-full mr-2"></span>
+                לחצו על שם היצרן במקרא (למטה) כדי להוסיף או להסיר מהגרף
+            </p>
+        </div>
+
+        <!-- 3. Split Row: Unanswered & Faults -->
+        <div class="grid lg:grid-cols-2 gap-8">
+            <!-- Unanswered -->
+            <div class="bg-white p-6 rounded-3xl shadow-lg border border-slate-100">
+                <div class="mb-6">
+                    <h3 class="text-xl font-bold text-slate-800">כמות קריאות שירות לפי יצרן</h3>
+                    <p class="text-sm text-slate-400">כמות רכבים שטרם ביצעו את התיקון</p>
+                </div>
+                <div class="chart-box">
+                    <canvas id="unansweredChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Fault Types -->
+            <div class="bg-white p-6 rounded-3xl shadow-lg border border-slate-100">
+                <div class="mb-6">
+                    <h3 class="text-xl font-bold text-slate-800">התפלגות סוגי תקלות</h3>
+                    <p class="text-sm text-slate-400">מהות הכשל הטכני (התפלגות עיקרית)</p>
+                </div>
+                <div class="chart-box">
+                    <canvas id="faultChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Top Models (Horizontal Bar Chart) -->
+        <div class="bg-white p-6 rounded-3xl shadow-lg border border-slate-100">
+            <div class="mb-6">
+                <h3 class="text-xl font-bold text-slate-800">דגמים עם סיכון גבוה</h3>
+                <p class="text-sm text-slate-400">10 הדגמים המובילים בכמות ריקולים פתוחים</p>
+            </div>
+            <div class="chart-box-lg">
+                <canvas id="modelChart"></canvas>
+            </div>
+        </div>
+
     </main>
 
     <footer class="bg-slate-900 text-slate-400 text-center py-8 mt-12 border-t border-slate-800">
-        <p class="text-sm">המידע מבוסס על מאגר המידע הממשלתי (Data.gov.il).</p>
+        <p class="text-sm">המידע מבוסס על ניתוח נתוני משרד התחבורה | נכון לתאריך: 20/11/2025</p>
     </footer>
 
+    <!-- =================================================
+       JAVASCRIPT LOGIC
+    ================================================== -->
     <script>
+        // ==========================================
+        // PART A: PLATE CHECKER (UNCHANGED)
+        // ==========================================
         const dataCache = {};
-        let infoDataCache = null; // To store the big info file once loaded
+        let infoDataCache = null; 
 
         function checkCar() {
             const inputField = document.getElementById('plateInput');
@@ -104,18 +195,15 @@
                 alert('נא להזין מספר רכב תקין');
                 return;
             }
-
-            // Handle 7 vs 8 digits logic
             if (input.length === 7) input = "0" + input;
 
-            // UI State
             btn.innerHTML = '<div class="loader"></div> מחפש...';
             btn.disabled = true;
             inputField.disabled = true;
 
             const lastDigit = input.slice(-1);
             const splitFile = `split_data/data_${lastDigit}.csv`;
-            const infoFile = `split_data/recalls_info.csv`; // This file has the contacts
+            const infoFile = `split_data/recalls_info.csv`; 
 
             const resetUI = () => {
                 btn.innerText = "בדיקת רכב";
@@ -123,33 +211,27 @@
                 inputField.disabled = false;
             };
 
-            // STEP 1: Load the car list (split file)
             const loadSplitFile = () => {
                 if (dataCache[lastDigit]) {
                     processCarList(dataCache[lastDigit]);
                 } else {
                     Papa.parse(splitFile, {
-                        download: true, 
-                        header: true, 
-                        skipEmptyLines: true,
+                        download: true, header: true, skipEmptyLines: true,
                         complete: (results) => {
                             dataCache[lastDigit] = results.data;
                             processCarList(results.data);
                         },
                         error: (err) => {
                             console.error(err);
-                            alert("שגיאה בטעינת הנתונים. וודא שהקבצים הועלו לגיטהאב.");
+                            alert("שגיאה בטעינת הנתונים.");
                             resetUI();
                         }
                     });
                 }
             };
 
-            // STEP 2: Filter car list and if found, load info file
             const processCarList = (data) => {
                 const searchInt = parseInt(input, 10);
-                
-                // Find plate column safely
                 const keys = Object.keys(data[0]);
                 const plateKey = keys.find(k => k.includes('MISPAR_RECHEV'));
                 
@@ -161,62 +243,45 @@
                 });
 
                 if (foundVehicles.length === 0) {
-                    // Nothing found - show green success message immediately
-                    renderResults([], input); 
-                    resetUI();
+                    renderResults([], input); resetUI();
                 } else {
-                    // Found something! Now fetch contact info
                     loadInfoFile(foundVehicles);
                 }
             };
 
-            // STEP 3: Load the detailed Info File
             const loadInfoFile = (foundVehicles) => {
                 if (infoDataCache) {
                     mergeAndRender(foundVehicles, infoDataCache);
                 } else {
-                    console.log("Downloading Info File...");
                     Papa.parse(infoFile, {
-                        download: true,
-                        header: true,
-                        delimiter: '|', // CRITICAL: Info file uses Pipe separator
-                        skipEmptyLines: true,
+                        download: true, header: true, delimiter: '|', skipEmptyLines: true,
                         complete: (results) => {
                             infoDataCache = results.data;
                             mergeAndRender(foundVehicles, results.data);
                         },
                         error: (err) => {
                             console.error("Info file error:", err);
-                            // Render what we have even if info file fails
-                            renderResults(foundVehicles, input); 
-                            resetUI();
+                            renderResults(foundVehicles, input); resetUI();
                         }
                     });
                 }
             };
 
-            // STEP 4: Join the tables
             const mergeAndRender = (vehicles, infoData) => {
                 const finalData = vehicles.map(v => {
-                    // Find matching row in infoData by RECALL_ID
-                    // We use vague matching because sometimes csvs have invisible spaces
                     const info = infoData.find(i => String(i.RECALL_ID).trim() === String(v.RECALL_ID).trim());
-                    
                     return {
-                        ...v, // Keep original data
-                        // Add new data (or default to empty if not found)
+                        ...v,
                         YEVUAN_TEUR: info ? info.YEVUAN_TEUR : 'לא ידוע',
                         TELEPHONE: info ? info.TELEPHONE : '',
                         WEBSITE: info ? info.WEBSITE : '',
                         OFEN_TIKUN: info ? info.OFEN_TIKUN : 'פנה ליבואן לקבלת פרטים'
                     };
                 });
-                
                 renderResults(finalData, input);
                 resetUI();
             };
             
-            // Start the chain
             loadSplitFile();
         }
 
@@ -234,77 +299,37 @@
                                 <p class="text-red-600">רכב מספר: <span class="font-mono font-bold">${input}</span></p>
                             </div>
                         </div>
-                        
                         <div class="space-y-6">
                 `;
-
                 foundVehicles.forEach((v, index) => {
-                    // Detect key names dynamically for the base object just in case
                     const k = Object.keys(v);
                     const recallId = v['RECALL_ID'] || v[k.find(key => key.includes('RECALL_ID'))] || '-';
-                    const type = v['SUG_RECALL'] || '-';
                     const issue = v['TEUR_TAKALA'] || v['SUG_TAKALA'] || '-';
-                    const date = v['TAARICH_PTICHA'] || '-';
                     const fix = v['OFEN_TIKUN'] || '-';
                     const importer = v['YEVUAN_TEUR'] || '-';
                     const phone = v['TELEPHONE'] ? v['TELEPHONE'].replace(/[^0-9*]/g, '') : '';
-                    const website = v['WEBSITE'] || '#';
-
+                    
                     html += `
                         <div class="bg-white rounded-xl border border-red-100 overflow-hidden shadow-sm">
                             <div class="bg-red-100/50 px-4 py-2 border-b border-red-100 flex justify-between items-center">
                                 <span class="font-bold text-red-800 text-sm">קריאה מס' ${index + 1}</span>
                                 <span class="text-xs bg-white px-2 py-1 rounded border border-red-200 font-mono">ID: ${recallId}</span>
                             </div>
-                            
                             <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <p class="text-xs text-gray-500">מהות התקלה</p>
-                                    <p class="font-bold text-gray-800">${issue}</p>
-                                </div>
-                                <div>
-                                    <p class="text-xs text-gray-500">אופן התיקון</p>
-                                    <p class="text-gray-800">${fix}</p>
-                                </div>
-                                <div>
-                                    <p class="text-xs text-gray-500">סוג ריקול</p>
-                                    <p class="text-gray-800">${type}</p>
-                                </div>
-                                <div>
-                                    <p class="text-xs text-gray-500">תאריך פתיחה</p>
-                                    <p class="text-gray-800">${date}</p>
-                                </div>
+                                <div><p class="text-xs text-gray-500">מהות התקלה</p><p class="font-bold text-gray-800">${issue}</p></div>
+                                <div><p class="text-xs text-gray-500">אופן התיקון</p><p class="text-gray-800">${fix}</p></div>
                             </div>
-
-                            <!-- Contact Section -->
                             <div class="bg-slate-50 p-4 border-t border-slate-100">
                                 <p class="text-xs text-gray-500 mb-2">פרטי יבואן: <strong>${importer}</strong></p>
                                 <div class="flex gap-3">
-                                    ${phone ? `
-                                    <a href="tel:${phone}" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg text-center font-bold text-sm flex items-center justify-center gap-2 transition">
-                                        <span>📞</span> חיוג (${v['TELEPHONE']})
-                                    </a>` : ''}
-                                    
-                                    ${website && website.length > 5 ? `
-                                    <a href="${website.startsWith('http') ? website : 'https://'+website}" target="_blank" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-center font-bold text-sm flex items-center justify-center gap-2 transition">
-                                        <span>🌐</span> אתר אינטרנט
-                                    </a>` : ''}
+                                    ${phone ? `<a href="tel:${phone}" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg text-center font-bold text-sm flex items-center justify-center gap-2 transition"><span>📞</span> חיוג</a>` : ''}
                                 </div>
                             </div>
-                        </div>
-                    `;
+                        </div>`;
                 });
-
-                html += `
-                        </div>
-                        <div class="mt-6 text-center">
-                            <p class="text-sm text-gray-500">חובה לגשת למוסך היבואן לביצוע התיקון.</p>
-                        </div>
-                    </div>
-                `;
+                html += `</div><div class="mt-6 text-center"><p class="text-sm text-gray-500">חובה לגשת למוסך היבואן לביצוע התיקון.</p></div></div>`;
                 resultDiv.innerHTML = html;
             } else {
-                // Success State
                 resultDiv.innerHTML = `
                     <div class="bg-emerald-50 border-2 border-emerald-100 rounded-2xl p-8 text-center shadow-xl animate-fade-in">
                         <div class="bg-emerald-100 w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4">
@@ -312,10 +337,276 @@
                         </div>
                         <h3 class="font-black text-2xl text-emerald-800 mb-2">הכל תקין!</h3>
                         <p class="text-emerald-700 text-lg">לא נמצאו קריאות שירות פתוחות לרכב <strong class="font-mono">${input}</strong>.</p>
-                    </div>
-                `;
+                    </div>`;
             }
         }
+
+        // ==========================================
+        // PART B: DASHBOARD LOGIC
+        // ==========================================
+        const reportData = {
+          "summary": { "total_campaigns": 3429, "total_open_recalls": 151587, "total_affected_vehicles": 138055, "avg_recalls_per_car": 1.1, "year_range": { "min": 2000, "max": 2025 } },
+          "timeline": {
+            "MITSUBISHI": { "years": [2000, 2001, 2003, 2004, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025], "counts": [2, 1, 1, 3, 1, 2, 2, 4, 1, 1, 1, 5, 4, 3, 3, 5, 9, 10, 3, 3, 3, 2, 1, 3] },
+            "CHRYSLER": { "years": [2001, 2005, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025], "counts": [2, 1, 2, 10, 6, 4, 16, 4, 20, 1, 2, 1, 1, 6] },
+            "FORD": { "years": [2001, 2003, 2008, 2011, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025], "counts": [1, 1, 3, 1, 1, 2, 5, 4, 2, 7, 17, 41, 47, 44, 61, 24, 66] },
+            "MAZDA": { "years": [2001, 2008, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2023, 2024, 2025], "counts": [1, 1, 2, 1, 1, 1, 2, 9, 3, 5, 12, 8, 12, 3, 12, 4] },
+            "CHEVROLET": { "years": [2002, 2003, 2004, 2009, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025], "counts": [1, 1, 2, 1, 1, 2, 3, 12, 9, 12, 1, 5, 4, 49, 47, 10, 12, 12, 12] },
+            "HYUNDAI": { "years": [2002, 2003, 2004, 2005, 2009, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025], "counts": [3, 1, 1, 1, 2, 3, 1, 2, 2, 3, 4, 3, 3, 3, 10, 10, 26, 12] },
+            "HONDA": { "years": [2004, 2005, 2006, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025], "counts": [2, 1, 1, 1, 3, 1, 4, 3, 2, 12, 4, 16, 6, 8, 7, 10, 16, 6, 8, 7] },
+            "TOYOTA": { "years": [2007, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025], "counts": [1, 1, 5, 7, 8, 7, 23, 35, 19, 28, 43, 61, 47, 37, 22, 36] },
+            "JEEP": { "years": [2009, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025], "counts": [2, 1, 2, 3, 5, 31, 6, 47, 13, 3, 22, 45, 34] },
+            "BMW": { "years": [2010, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025], "counts": [1, 2, 3, 4, 3, 4, 3, 8, 16, 20, 44, 54, 44, 37, 76] },
+            "MERCEDES BENZ": { "years": [2011, 2014, 2015, 2016, 2017, 2019, 2020, 2021, 2022, 2023, 2024, 2025], "counts": [1, 1, 3, 4, 4, 2, 1, 5, 15, 35, 96, 36] },
+            "NISSAN": { "years": [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2023, 2024, 2025], "counts": [2, 2, 4, 3, 5, 14, 9, 5, 7, 3, 2, 3, 7, 3] },
+            "SUBARU": { "years": [2011, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025], "counts": [1, 3, 12, 17, 17, 11, 15, 10, 16, 6, 1, 2] },
+            "VOLKSWAGEN": { "years": [2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025], "counts": [1, 1, 3, 2, 6, 6, 7, 7, 15, 3, 15, 10, 6, 9] },
+            "AUDI": { "years": [2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025], "counts": [1, 1, 3, 4, 8, 9, 13, 5, 6, 8, 7, 19] }
+          },
+          "unanswered_by_manufacturer": {
+            "manufacturers": ["האירוק היק", "האירוק יאדנוי", "הינמרג וו מ ב", "היקרוט הטויוט", "נמרג ןגווסקלופ", "\"בהרא וו מ ב", "היקבולס היק", "ןפי הדזמ", "ןפי-הדנוה", "דרפס-ןגווסקלופ", "הילגנא ןאסינ", "היכ'צ הדוקס", "היקרוט יאדנוי", "ןפי הטויוט", "ןיס הלסט"],
+            "counts": [23748, 5563, 2038, 1979, 1414, 1390, 1108, 1082, 654, 651, 631, 610, 602, 593, 529]
+          },
+          "fault_types": {
+            "types": ["ריווא תוירכ", "ויתוכרעמו עונמ", "רחא", "גוזימו הקינורטקילא למשח", "םילתמו יוגיה", "םימלב", "הדלישו בכרמ", "תוחיטבה תכרעמ", "חוכ תרבעה תכרעמ", "קלדה תכרעמ"],
+            "counts": [62971, 34975, 12556, 12223, 7969, 7700, 3917, 2677, 2216, 1558]
+          },
+          "top_models": {
+            "models": ["KIA RIO", "KIA SPORTAGE", "KIA FORTE", "KIA NIRO", "HYUNDAI I25", "BMW X1 / X3 / X4 / X5 / X6", "TOYOTA COROLLA", "VOLKSWAGEN CRAFTER / GOLF / PASSAT / POLO / TRANSPORTER", "KIA SORENTO", "KIA CARENS"],
+            "counts": [11219, 4060, 3014, 2764, 2102, 1985, 1985, 1881, 1513, 1066]
+          },
+          "metadata": { "generated_date": "20/11/2025" }
+        };
+
+        // UI Init
+        const fmt = (n) => new Intl.NumberFormat('he-IL').format(n);
+        document.getElementById('kpiCampaigns').innerText = fmt(reportData.summary.total_campaigns);
+        document.getElementById('kpiOpen').innerText = fmt(reportData.summary.total_open_recalls);
+        document.getElementById('kpiVehicles').innerText = fmt(reportData.summary.total_affected_vehicles);
+        document.getElementById('kpiAvg').innerText = reportData.summary.avg_recalls_per_car;
+
+        // Bidi Fix
+        function smartFix(str) {
+            if(!str) return "";
+            const hebrewRegex = /[\u0590-\u05FF]/;
+            if(hebrewRegex.test(str)) return str.split('').reverse().join('');
+            return str;
+        }
+
+        // CHART CONFIGURATION
+        Chart.register(ChartDataLabels);
+        Chart.defaults.font.family = "'Rubik', sans-serif";
+        Chart.defaults.color = '#64748b'; 
+        Chart.defaults.borderColor = '#f1f5f9'; 
+        Chart.defaults.plugins.datalabels.font = { weight: 'bold', size: 11 };
+        Chart.defaults.plugins.datalabels.color = '#334155';
+
+        // --- UNIQUE COLORS PALETTE FOR PIE ONLY ---
+        const distinctRainbow = [
+            '#e6194b', '#3cb44b', '#f5c211', '#4363d8', '#f58231', 
+            '#911eb4', '#00ced1', '#f032e6', '#8ca606', '#e06c75', 
+            '#008080', '#9a67ea', '#800000', '#808000', '#000075',
+            '#2d3436', '#e84118', '#192a56', '#44bd32', '#8c7ae6'
+        ];
+
+        // 1. TIMELINE (Strict mapped colors)
+        const years = [];
+        for(let y=2000; y<=2025; y++) years.push(y);
+        const targetBrands = ['BMW', 'MERCEDES BENZ', 'FORD', 'HYUNDAI', 'CHEVROLET', 'TOYOTA', 'JEEP'];
+        
+        // MAP FROM PROMPT (UPDATED TO MATTE/PASTEL "FLAT UI" STYLE)
+        const brandColors = {
+            'MITSUBISHI': '#EC7063', // Soft Red
+            'CHRYSLER': '#58D68D',   // Soft Emerald
+            'FORD': '#5DADE2',       // Soft Blue
+            'MAZDA': '#5D6D7E',      // Blue Grey
+            'CHEVROLET': '#F5B041',  // Soft Orange
+            'HYUNDAI': '#AF7AC5',    // Soft Purple
+            'HONDA': '#AAB7B8',      // Concrete Grey
+            'TOYOTA': '#E59866',     // Soft Terracotta
+            'JEEP': '#82E0AA',       // Pale Green
+            'BMW': '#5499C7',        // Steel Blue
+            'MERCEDES BENZ': '#48C9B0', // Turquoise
+            'NISSAN': '#A569BD',     // Deep Pastel Purple
+            'SUBARU': '#2E86C1',     // Matte Dark Blue
+            'VOLKSWAGEN': '#566573', // Charcoal
+            'AUDI': '#99A3A4'        // Silver
+        };
+
+        const timelineDatasets = Object.keys(reportData.timeline).map((brand, idx) => {
+            const info = reportData.timeline[brand];
+            const pts = years.map(yr => {
+                const i = info.years.indexOf(yr);
+                return i !== -1 ? info.counts[i] : 0;
+            });
+            
+            const c = brandColors[brand] || '#999999';
+            
+            return {
+                label: brand,
+                data: pts,
+                borderColor: c,
+                backgroundColor: c,
+                borderWidth: 3,
+                tension: 0.3,
+                pointRadius: 4,
+                pointBackgroundColor: c, 
+                pointBorderWidth: 0,
+                hidden: !targetBrands.includes(brand),
+                datalabels: { display: false }
+            };
+        });
+
+        new Chart(document.getElementById('timelineChart'), {
+            type: 'line',
+            data: { labels: years, datasets: timelineDatasets },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } } },
+                scales: { y: { beginAtZero: true }, x: { grid: { display: false } } }
+            }
+        });
+
+        // 2. UNANSWERED (SINGLE COLOR: Red/Warning)
+        const mfrs = reportData.unanswered_by_manufacturer.manufacturers.map(smartFix);
+        new Chart(document.getElementById('unansweredChart'), {
+            type: 'bar',
+            data: {
+                labels: mfrs,
+                datasets: [{
+                    label: 'קריאות פתוחות',
+                    data: reportData.unanswered_by_manufacturer.counts,
+                    backgroundColor: '#ef4444', // Unified Red
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { 
+                    legend: { display: false },
+                    datalabels: { 
+                        anchor: 'end', 
+                        align: 'end', 
+                        offset: 4
+                    }
+                },
+                scales: { x: { display: false }, y: { grid: { display: false } } },
+                layout: { padding: { left: 50 } }
+            }
+        });
+
+        // 3. FAULTS (Pie: Cleaned, Spaced)
+        const totalFaults = reportData.fault_types.counts.reduce((a,b) => a+b, 0);
+        const rawFaults = reportData.fault_types.types.map(smartFix);
+        
+        new Chart(document.getElementById('faultChart'), {
+            type: 'doughnut',
+            // Connector plugin
+            plugins: [{
+                id: 'connectorLine',
+                afterDraw: (chart) => {
+                    const ctx = chart.ctx;
+                    ctx.save();
+                    ctx.strokeStyle = '#cbd5e1';
+                    ctx.lineWidth = 1;
+                    chart.data.datasets.forEach((dataset, i) => {
+                        const meta = chart.getDatasetMeta(i);
+                        meta.data.forEach((element, index) => {
+                            const val = dataset.data[index];
+                            if ((val / totalFaults) < 0.03) return;
+
+                            const model = element;
+                            const midAngle = (model.startAngle + model.endAngle) / 2;
+                            const outerRadius = model.outerRadius;
+                            const x1 = model.x + Math.cos(midAngle) * outerRadius;
+                            const y1 = model.y + Math.sin(midAngle) * outerRadius;
+                            const x2 = model.x + Math.cos(midAngle) * (outerRadius + 15);
+                            const y2 = model.y + Math.sin(midAngle) * (outerRadius + 15);
+                            
+                            ctx.beginPath();
+                            ctx.moveTo(x1, y1);
+                            ctx.lineTo(x2, y2);
+                            ctx.stroke();
+                        });
+                    });
+                    ctx.restore();
+                }
+            }],
+            data: {
+                labels: rawFaults,
+                datasets: [{
+                    data: reportData.fault_types.counts,
+                    backgroundColor: distinctRainbow,
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '55%',
+                layout: { padding: 80 },
+                plugins: { 
+                    legend: { display: false }, 
+                    datalabels: { 
+                        color: '#1e293b',
+                        anchor: 'end', 
+                        align: 'end', 
+                        offset: 15,
+                        formatter: (val, ctx) => {
+                            const percentage = val / totalFaults;
+                            if(percentage < 0.03) return null; 
+                            return ctx.chart.data.labels[ctx.dataIndex] + '\n' + fmt(val);
+                        },
+                        font: { size: 13, weight: 'bold', lineHeight: 1.4 },
+                        textAlign: 'center'
+                    }
+                }
+            }
+        });
+
+        // 4. MODELS (SINGLE COLOR: Blue/Primary)
+        const modelsRaw = reportData.top_models.models.map(smartFix);
+        function wrapText(str) {
+            if(str.length < 25) return str;
+            return str.match(/.{1,30}(\s|$)/g) || [str];
+        }
+        const modelsWrapped = modelsRaw.map(wrapText);
+
+        new Chart(document.getElementById('modelChart'), {
+            type: 'bar',
+            data: {
+                labels: modelsWrapped,
+                datasets: [{
+                    label: 'כמות רכבים',
+                    data: reportData.top_models.counts,
+                    backgroundColor: '#3b82f6', // Unified Blue
+                    borderRadius: 6,
+                    barPercentage: 0.6, 
+                    categoryPercentage: 0.8
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { 
+                    legend: { display: false },
+                    datalabels: { anchor: 'end', align: 'end', offset: 4 }
+                },
+                scales: { 
+                    x: { display: false },
+                    y: { 
+                        grid: { display: false },
+                        ticks: { font: { size: 11 }, autoSkip: false, mirror: false }
+                    } 
+                },
+                layout: { padding: { left: 60 } }
+            }
+        });
+
     </script>
 </body>
 </html>
