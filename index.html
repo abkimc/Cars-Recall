@@ -5,23 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>בדיקת ריקולים לרכב | משרד התחבורה</title>
     
-    <!-- Fonts: Rubik -->
+    <!-- Google Fonts: Rubik -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;700;900&display=swap" rel="stylesheet">
     
-    <!-- Tailwind CSS -->
+    <!-- Tailwind CSS Framework -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- CSV Parser -->
+    <!-- CSV Parser Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
     <style>
         body { font-family: 'Rubik', sans-serif; }
         
-        /* Israeli License Plate Design */
+        /* --- Israeli License Plate Component --- */
         .il-plate-container {
-            background-color: #FFCC00;
+            background-color: #FFCC00; /* The Standard Yellow */
             border: 2px solid #333;
             border-radius: 8px;
             position: relative;
@@ -43,8 +43,8 @@
             background-color: #003399;
             width: 45px;
             height: 100%;
-            border-top-right-radius: 5px; /* RTL flip */
-            border-bottom-right-radius: 5px; /* RTL flip */
+            border-top-right-radius: 5px;
+            border-bottom-right-radius: 5px;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -69,9 +69,13 @@
             color: #333;
             letter-spacing: 4px;
             outline: none;
-            padding-left: 50px; /* Space for blue strip */
-            font-family: 'Rubik', sans-serif; /* Ensure font matches numbers */
+            padding-left: 50px;
+            font-family: 'Rubik', sans-serif;
         }
+
+        /* Hide spinner in input numbers */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
         /* Loading Spinner */
         .loader {
@@ -82,13 +86,18 @@
             height: 20px;
             animation: spin 1s linear infinite;
             margin-left: 8px;
+            display: inline-block;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Animation for results */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
 
-    <!-- Hero Section -->
+    <!-- HERO SECTION -->
     <header class="bg-white shadow-sm pt-12 pb-16 px-4 text-center relative overflow-hidden">
         <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600"></div>
         
@@ -99,12 +108,12 @@
             בדיקה מהירה במאגר משרד התחבורה לאיתור קריאות שירות (Recall) פתוחות.
         </p>
 
-        <!-- Search Box -->
+        <!-- Input Area -->
         <div class="mb-8">
             <div class="il-plate-container">
                 <div class="il-blue-strip">
                     <span>IL</span>
-                    <div class="w-5 h-3 bg-white rounded-[1px] mt-1 opacity-90"></div> <!-- Flag placeholder -->
+                    <div class="w-5 h-3 bg-white rounded-[1px] mt-1 opacity-90"></div>
                     <span>ישראל</span>
                 </div>
                 <input type="text" inputmode="numeric" pattern="[0-9]*" id="plateInput" class="il-input" placeholder="12345678" maxlength="8">
@@ -116,147 +125,172 @@
             בדיקת רכב 
         </button>
 
-        <!-- Results Container -->
+        <!-- RESULT AREA -->
         <div id="resultArea" class="mt-10 max-w-3xl mx-auto hidden transition-all duration-500 ease-in-out">
-            <!-- Dynamic Content Goes Here -->
+            <!-- Content injected via JS -->
         </div>
     </header>
 
-    <!-- Info / Graphs Section -->
+    <!-- INFO / GRAPHS SECTION -->
     <main class="max-w-5xl mx-auto px-4 py-12 space-y-20">
-        
-        <!-- Data Story -->
         <div class="text-center">
             <h2 class="text-3xl font-bold text-slate-900">נתונים מהשטח</h2>
             <div class="w-16 h-1.5 bg-blue-600 mx-auto mt-4 rounded-full"></div>
             <p class="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
-                מתוך כ-150,000 רשומות פעילות, ניתחנו את הנתונים כדי להבין אילו רכבים הכי חשופים לתקלות בטיחות.
+                מתוך עשרות אלפי רשומות, אנו מציגים את הנתונים העדכניים ביותר על תקלות בטיחות בישראל.
             </p>
         </div>
 
         <div class="grid md:grid-cols-2 gap-8">
             <!-- Placeholder Graph 1 -->
             <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-100">
-                <div class="h-64 bg-slate-100 rounded-xl flex items-center justify-center mb-4 text-slate-400">
-                    <!-- Put your image here: <img src="assets/graph1.png" class="h-full object-contain"> -->
-                    <span>גרף 1: יצרנים מובילים</span>
+                <div class="h-64 bg-slate-100 rounded-xl flex items-center justify-center mb-4 text-slate-400 relative overflow-hidden">
+                    <!-- If you have images, uncomment the line below and remove the span -->
+                    <!-- <img src="assets/graph1.png" class="object-contain h-full w-full"> -->
+                    <span class="text-6xl opacity-20">📊</span>
                 </div>
-                <h3 class="text-xl font-bold text-slate-800 mb-2">מי היצרנים המובילים?</h3>
+                <h3 class="text-xl font-bold text-slate-800 mb-2">היצרנים עם הכי הרבה קריאות</h3>
                 <p class="text-slate-600 text-sm leading-relaxed">
-                    הגרף מציג את התפלגות הקריאות הפתוחות לפי יצרן. נתון גבוה לא בהכרח מעיד על רכב פחות אמין, אלא לעיתים על אחריות יצרן גבוהה יותר.
+                    הגרף מציג את התפלגות הקריאות הפתוחות לפי יצרן. (כאן תוכל להוסיף תמונה של הגרף שיצרת).
                 </p>
             </div>
 
             <!-- Placeholder Graph 2 -->
             <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-100">
-                <div class="h-64 bg-slate-100 rounded-xl flex items-center justify-center mb-4 text-slate-400">
-                    <!-- Put your image here: <img src="assets/graph2.png" class="h-full object-contain"> -->
-                    <span>גרף 2: סוגי תקלות</span>
+                <div class="h-64 bg-slate-100 rounded-xl flex items-center justify-center mb-4 text-slate-400 relative overflow-hidden">
+                     <!-- If you have images, uncomment the line below and remove the span -->
+                    <!-- <img src="assets/graph2.png" class="object-contain h-full w-full"> -->
+                    <span class="text-6xl opacity-20">📉</span>
                 </div>
-                <h3 class="text-xl font-bold text-slate-800 mb-2">מה מתקלקל הכי הרבה?</h3>
+                <h3 class="text-xl font-bold text-slate-800 mb-2">סוגי תקלות נפוצים</h3>
                 <p class="text-slate-600 text-sm leading-relaxed">
-                    חלוקה לפי סוגי מכלולים: כריות אוויר, מערכת היגוי, בלמים ומנוע.
+                    האם הבעיה היא בכריות האוויר או במנוע? ניתוח סוגי התקלות הנפוצים ביותר בישראל.
                 </p>
             </div>
         </div>
     </main>
 
     <footer class="bg-slate-900 text-slate-400 text-center py-8 mt-12 border-t border-slate-800">
-        <p class="text-sm">
-            המידע מבוסס על מאגר המידע הממשלתי (Data.gov.il). השימוש באחריות המשתמש בלבד.
-        </p>
-        <p class="text-xs mt-2 opacity-50">
-            פותח כשירות לציבור
-        </p>
+        <p class="text-sm">המידע מבוסס על מאגר המידע הממשלתי (Data.gov.il).</p>
+        <p class="text-xs mt-2 opacity-50">פותח כשירות לציבור. אין לראות במידע זה ייעוץ משפטי או מקצועי.</p>
     </footer>
 
-    <!-- LOGIC SCRIPT -->
+    <!-- JAVASCRIPT LOGIC -->
     <script>
-        // Cache to store downloaded CSV chunks
+        // Cache to ensure we don't download files twice
         const dataCache = {};
 
         function checkCar() {
             const inputField = document.getElementById('plateInput');
             const resultDiv = document.getElementById('resultArea');
             const btn = document.getElementById('searchBtn');
-            const input = inputField.value.trim();
+            
+            // 1. Clean Input (Remove spaces/dashes)
+            const input = inputField.value.replace(/[^0-9]/g, '').trim(); 
             
             // Reset UI
             resultDiv.innerHTML = '';
             resultDiv.classList.add('hidden');
 
-            // Validation
-            if(!input || input.length < 7 || isNaN(input)) {
-                alert('נא להזין מספר רכב תקין (7 או 8 ספרות)');
+            // Basic Validation
+            if(!input || input.length < 6) {
+                alert('נא להזין מספר רכב תקין (לפחות 6 ספרות)');
                 return;
             }
 
             // UI Loading State
             const originalBtnText = btn.innerText;
-            btn.innerHTML = '<div class="loader"></div> מחפש...';
+            btn.innerHTML = '<div class="loader"></div> טוען...';
             btn.disabled = true;
             inputField.disabled = true;
 
-            // 1. Logic: Get last digit to find the right file
+            // 2. Determine File (Split strategy)
             const lastDigit = input.slice(-1);
             const fileName = `split_data/data_${lastDigit}.csv`;
 
-            console.log(`Looking for plate ending in ${lastDigit} in file ${fileName}`);
+            console.log(`Searching for: ${input} in file: ${fileName}`);
 
-            // 2. Helper function to process data once loaded
-            const processData = (data) => {
-                // Filter logic matching your specific columns
-                const foundVehicles = data.filter(row => {
-                    // Ensure we compare strings to avoid type mismatches
-                    return String(row['MISPAR_RECHEV']).trim() === input;
-                });
-
-                renderResults(foundVehicles, input);
-                
-                // Reset UI
-                btn.innerText = originalBtnText;
+            // Function to restore button state
+            const resetUI = () => {
+                btn.innerText = "בדיקת רכב";
                 btn.disabled = false;
                 inputField.disabled = false;
             };
 
-            // 3. Check Cache or Download
+            // 3. Process Logic
+            const processData = (data) => {
+                if (!data || data.length === 0) {
+                    console.error("CSV File was empty");
+                    alert("שגיאה בקריאת הנתונים");
+                    resetUI();
+                    return;
+                }
+
+                // --- SMART COLUMN DETECTION (Fixes "Invisible Character" bug) ---
+                const firstRow = data[0];
+                const keys = Object.keys(firstRow);
+                
+                // Find columns that *contain* the keywords (ignores BOM/encoding junk)
+                const plateKey = keys.find(k => k.includes('MISPAR_RECHEV'));
+                const recallTypeKey = keys.find(k => k.includes('SUG_RECALL')) || 'SUG_RECALL';
+                const issueKey = keys.find(k => k.includes('TEUR_TAKALA')) || keys.find(k => k.includes('SUG_TAKALA')) || 'TEUR_TAKALA';
+                const dateKey = keys.find(k => k.includes('TAARICH_PTICHA')) || 'TAARICH_PTICHA';
+
+                if (!plateKey) {
+                    console.error("Critical Error: Could not identify Plate Number column in:", keys);
+                    alert("שגיאה במבנה הנתונים. נא לפתוח F12 ולבדוק בקונסול.");
+                    resetUI();
+                    return;
+                }
+
+                // Filter Data
+                const foundVehicles = data.filter(row => {
+                    // Convert to string and trim to be safe
+                    const rowPlate = String(row[plateKey] || '').trim();
+                    return rowPlate === input;
+                });
+
+                // Render
+                renderResults(foundVehicles, input, { recallTypeKey, issueKey, dateKey });
+                resetUI();
+            };
+
+            // 4. Check Cache or Fetch
             if (dataCache[lastDigit]) {
+                console.log("Using cached data");
                 processData(dataCache[lastDigit]);
             } else {
                 Papa.parse(fileName, {
                     download: true,
                     header: true,
                     skipEmptyLines: true,
+                    // We remove 'encoding' parameter to let browser auto-detect, usually works best for UTF-8
                     complete: function(results) {
-                        dataCache[lastDigit] = results.data; // Cache it
+                        dataCache[lastDigit] = results.data;
                         processData(results.data);
                     },
                     error: function(err) {
-                        console.error("Error loading CSV:", err);
-                        // Even if error, maybe the file doesn't exist because there are no cars ending in X?
-                        // But usually it's a network error.
-                        alert('שגיאה בטעינת הנתונים. ייתכן שהקובץ חסר או שיש בעיית רשת.');
-                        btn.innerText = originalBtnText;
-                        btn.disabled = false;
-                        inputField.disabled = false;
+                        console.error("Network/Parse Error:", err);
+                        alert('לא ניתן לטעון את קובץ הנתונים. וודא שתיקיית split_data קיימת ב-GitHub.');
+                        resetUI();
                     }
                 });
             }
         }
 
-        function renderResults(foundVehicles, input) {
+        function renderResults(foundVehicles, input, colNames) {
             const resultDiv = document.getElementById('resultArea');
             resultDiv.classList.remove('hidden');
 
             if(foundVehicles.length > 0) {
-                // DANGER: Found Record
+                // --- BAD NEWS (Recall Found) ---
                 let html = `
-                    <div class="bg-red-50 border-2 border-red-100 rounded-2xl p-6 md:p-8 text-right shadow-xl animate-[fadeIn_0.5s_ease-out]">
+                    <div class="bg-red-50 border-2 border-red-100 rounded-2xl p-6 md:p-8 text-right shadow-xl animate-fade-in">
                         <div class="flex items-center mb-4 border-b border-red-100 pb-4">
                             <div class="bg-red-100 text-red-600 p-3 rounded-full text-2xl ml-4">⚠️</div>
                             <div>
                                 <h3 class="font-black text-2xl text-red-800">נמצאו קריאות שירות פתוחות</h3>
-                                <p class="text-red-600 text-sm">מספר רכב: <span class="font-mono font-bold text-lg">${input}</span></p>
+                                <p class="text-red-600 text-sm">רכב מספר: <span class="font-mono font-bold text-lg">${input}</span></p>
                             </div>
                         </div>
                         
@@ -266,7 +300,7 @@
                                     <tr>
                                         <th class="px-4 py-3 rounded-r">סוג ריקול</th>
                                         <th class="px-4 py-3">מהות התקלה</th>
-                                        <th class="px-4 py-3 rounded-l">תאריך פתיחה</th>
+                                        <th class="px-4 py-3 rounded-l">תאריך</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-red-100">
@@ -275,15 +309,9 @@
                 foundVehicles.forEach(v => {
                     html += `
                         <tr class="hover:bg-red-50 transition">
-                            <td class="px-4 py-3 font-bold text-slate-700">
-                                ${v['SUG_RECALL'] || 'כללי'}
-                            </td>
-                            <td class="px-4 py-3 text-slate-600 text-sm">
-                                ${v['TEUR_TAKALA'] || v['SUG_TAKALA'] || 'ללא פירוט'}
-                            </td>
-                            <td class="px-4 py-3 text-slate-500 text-sm whitespace-nowrap">
-                                ${v['TAARICH_PTICHA'] || '-'}
-                            </td>
+                            <td class="px-4 py-3 font-bold text-slate-700">${v[colNames.recallTypeKey] || 'כללי'}</td>
+                            <td class="px-4 py-3 text-slate-600 text-sm">${v[colNames.issueKey] || 'ללא פירוט'}</td>
+                            <td class="px-4 py-3 text-slate-500 text-sm whitespace-nowrap">${v[colNames.dateKey] || '-'}</td>
                         </tr>
                     `;
                 });
@@ -296,7 +324,7 @@
                             <span class="text-xl">📞</span>
                             <p class="text-sm text-slate-600 leading-snug">
                                 <strong>מה עושים עכשיו?</strong><br>
-                                מומלץ ליצור קשר עם מוסך היבואן המורשה בהקדם לביצוע התיקון (לרוב ללא עלות).
+                                חובה לגשת למוסך היבואן לתיקון התקלה (התיקון בדרך כלל ללא עלות). לא ניתן לעבור טסט שנתי עם ריקול פתוח מעל 6 חודשים.
                             </p>
                         </div>
                     </div>
@@ -304,18 +332,18 @@
                 resultDiv.innerHTML = html;
 
             } else {
-                // SAFE: No Record Found
+                // --- GOOD NEWS (No Recall) ---
                 resultDiv.innerHTML = `
-                    <div class="bg-emerald-50 border-2 border-emerald-100 rounded-2xl p-8 text-center shadow-xl animate-[fadeIn_0.5s_ease-out]">
+                    <div class="bg-emerald-50 border-2 border-emerald-100 rounded-2xl p-8 text-center shadow-xl animate-fade-in">
                         <div class="bg-emerald-100 w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4">
                             <span class="text-4xl">✅</span>
                         </div>
-                        <h3 class="font-black text-2xl text-emerald-800 mb-2">הכל נראה תקין!</h3>
+                        <h3 class="font-black text-2xl text-emerald-800 mb-2">הכל תקין!</h3>
                         <p class="text-emerald-700 text-lg mb-4">
-                            לא נמצאו קריאות שירות פתוחות עבור רכב מספר <strong class="font-mono">${input}</strong>.
+                            לא נמצאו קריאות שירות פתוחות לרכב מספר <strong class="font-mono">${input}</strong>.
                         </p>
                         <p class="text-xs text-emerald-600/60">
-                            * נכון למועד עדכון המאגר האחרון. ט.ל.ח
+                            * הנתונים נכונים למועד עדכון המאגר האחרון. ט.ל.ח
                         </p>
                     </div>
                 `;
