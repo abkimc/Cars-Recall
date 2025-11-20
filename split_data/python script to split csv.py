@@ -17,22 +17,23 @@ if not os.path.exists(output_folder):
 print("Loading large CSV...")
 
 
-cols_to_keep = [
-    'MISPAR_RECHEV', 
-    'SUG_RECALL',     # Recall Type
-    'SUG_TAKALA',     # Fault Type
-    'TEUR_TAKALA',    # Fault Description
-    'TAARICH_PTICHA'  # Date
-]
+
+# cols_to_keep = [
+#     'MISPAR_RECHEV', 
+#     'SUG_RECALL',     # Recall Type
+#     'SUG_TAKALA',     # Fault Type
+#     'TEUR_TAKALA',    # Fault Description
+#     'TAARICH_PTICHA'  # Date
+# ]
 
 # sep='|' (pipe separator)
 # added encoding (Hebrew files often need 'cp1255' or 'utf-8')
 try:
-    df = pd.read_csv(input_file, sep='|', usecols=cols_to_keep, dtype={plate_column: str}, encoding='utf-8')
+    df = pd.read_csv(input_file, sep='|',dtype={plate_column: str}, encoding='utf-8') #  usecols=cols_to_keep, dtype={plate_column: str}, encoding='utf-8')
 except UnicodeDecodeError:
     # If UTF-8 fails, try the standard Windows Hebrew encoding
     print("UTF-8 failed, trying Windows-1255 encoding...")
-    df = pd.read_csv(input_file, sep='|', usecols=cols_to_keep, dtype={plate_column: str}, encoding='cp1255')
+    df = pd.read_csv(input_file, sep='|', dtype={plate_column: str}, encoding='cp1255')  # usecols=cols_to_keep, dtype={plate_column: str}, encoding='cp1255')
 
 # Ensure plate numbers are strings and have no whitespace
 df[plate_column] = df[plate_column].astype(str).str.strip()
