@@ -145,7 +145,7 @@
             <!-- Placeholder Graph 1 -->
             <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-100">
                 <div class="h-64 bg-slate-100 rounded-xl flex items-center justify-center mb-4 text-slate-400 relative overflow-hidden">
-                    <!-- If you have images, uncomment the line below and remove the span -->
+                    <!-- Uncomment line below to add image -->
                     <!-- <img src="assets/graph1.png" class="object-contain h-full w-full"> -->
                     <span class="text-6xl opacity-20">📊</span>
                 </div>
@@ -158,7 +158,7 @@
             <!-- Placeholder Graph 2 -->
             <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-100">
                 <div class="h-64 bg-slate-100 rounded-xl flex items-center justify-center mb-4 text-slate-400 relative overflow-hidden">
-                     <!-- If you have images, uncomment the line below and remove the span -->
+                    <!-- Uncomment line below to add image -->
                     <!-- <img src="assets/graph2.png" class="object-contain h-full w-full"> -->
                     <span class="text-6xl opacity-20">📉</span>
                 </div>
@@ -205,6 +205,7 @@
             inputField.disabled = true;
 
             // 2. Determine File (Split strategy)
+            // Note: last digit is same for 1234567 and 01234567, so file load is safe
             const lastDigit = input.slice(-1);
             const fileName = `split_data/data_${lastDigit}.csv`;
 
@@ -226,11 +227,10 @@
                     return;
                 }
 
-                // --- SMART COLUMN DETECTION (Fixes "Invisible Character" bug) ---
+                // --- SMART COLUMN DETECTION ---
                 const firstRow = data[0];
                 const keys = Object.keys(firstRow);
                 
-                // Find columns that *contain* the keywords (ignores BOM/encoding junk)
                 const plateKey = keys.find(k => k.includes('MISPAR_RECHEV'));
                 const recallTypeKey = keys.find(k => k.includes('SUG_RECALL')) || 'SUG_RECALL';
                 const issueKey = keys.find(k => k.includes('TEUR_TAKALA')) || keys.find(k => k.includes('SUG_TAKALA')) || 'TEUR_TAKALA';
@@ -243,11 +243,12 @@
                     return;
                 }
 
-                // Filter Data
+                // --- FILTERING FIX: HANDLE LEADING ZERO ---
                 const foundVehicles = data.filter(row => {
-                    // Convert to string and trim to be safe
                     const rowPlate = String(row[plateKey] || '').trim();
-                    return rowPlate === input;
+                    
+                    // The Fix: Match input EXACTLY OR input with '0' at start
+                    return rowPlate === input || rowPlate === '0' + input;
                 });
 
                 // Render
@@ -264,7 +265,6 @@
                     download: true,
                     header: true,
                     skipEmptyLines: true,
-                    // We remove 'encoding' parameter to let browser auto-detect, usually works best for UTF-8
                     complete: function(results) {
                         dataCache[lastDigit] = results.data;
                         processData(results.data);
