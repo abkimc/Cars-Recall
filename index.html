@@ -5,64 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>בדיקת ריקולים לרכב | משרד התחבורה</title>
     
-    <!-- Google Fonts: Rubik -->
+    <!-- Fonts & Styles -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;700;900&display=swap" rel="stylesheet">
-    
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- PapaParse -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
     <style>
         body { font-family: 'Rubik', sans-serif; }
         
         .il-plate-container {
-            background-color: #FFCC00;
-            border: 2px solid #333;
-            border-radius: 8px;
-            position: relative;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-            max-width: 320px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            height: 70px;
-            transition: transform 0.2s;
+            background-color: #FFCC00; border: 2px solid #333; border-radius: 8px;
+            position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            max-width: 320px; margin: 0 auto; display: flex; align-items: center; height: 70px;
         }
-        
         .il-blue-strip {
-            background-color: #003399;
-            width: 45px;
-            height: 100%;
-            border-top-right-radius: 5px;
-            border-bottom-right-radius: 5px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            font-size: 11px;
-            font-weight: bold;
-            position: absolute; left: 0; top: 0; z-index: 10;
+            background-color: #003399; width: 45px; height: 100%;
+            border-top-right-radius: 5px; border-bottom-right-radius: 5px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            color: white; font-size: 11px; font-weight: bold; position: absolute; left: 0; top: 0; z-index: 10;
         }
-
         .il-input {
             background: transparent; border: none; width: 100%; height: 100%;
             text-align: center; font-size: 2.5rem; font-weight: 900; color: #333;
-            letter-spacing: 4px; outline: none; padding-left: 50px;
-            font-family: 'Rubik', sans-serif;
+            letter-spacing: 4px; outline: none; padding-left: 50px; font-family: 'Rubik', sans-serif;
         }
-        
-        /* Remove spinner from inputs */
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-
         .loader {
             border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 3px solid #fff;
-            width: 20px; height: 20px; animation: spin 1s linear infinite;
-            display: inline-block; margin-left: 8px;
+            width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; margin-left: 8px;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
@@ -71,19 +43,15 @@
 </head>
 <body class="bg-slate-50 text-slate-800">
 
+    <!-- Header -->
     <header class="bg-white shadow-sm pt-12 pb-16 px-4 text-center relative overflow-hidden">
         <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600"></div>
-        
         <h1 class="text-4xl md:text-5xl font-black text-slate-900 mb-4 tracking-tight">האם הרכב שלך בטוח?</h1>
-        <p class="text-xl text-slate-600 mb-10 max-w-2xl mx-auto font-light">בדיקה מהירה במאגר משרד התחבורה לאיתור קריאות שירות (Recall).</p>
+        <p class="text-xl text-slate-600 mb-10 max-w-2xl mx-auto font-light">בדיקת ריקולים מלאה כולל פרטי יבואן ואופן התיקון.</p>
 
         <div class="mb-8">
             <div class="il-plate-container">
-                <div class="il-blue-strip">
-                    <span>IL</span>
-                    <div class="w-5 h-3 bg-white rounded-[1px] mt-1 opacity-90"></div>
-                    <span>ישראל</span>
-                </div>
+                <div class="il-blue-strip"><span>IL</span><div class="w-5 h-3 bg-white rounded-[1px] mt-1 opacity-90"></div><span>ישראל</span></div>
                 <input type="text" inputmode="numeric" pattern="[0-9]*" id="plateInput" class="il-input" placeholder="12345678" maxlength="8">
             </div>
             <p class="text-sm text-gray-400 mt-2">הזן מספר רכב (7 או 8 ספרות)</p>
@@ -93,23 +61,23 @@
             בדיקת רכב 
         </button>
 
-        <div id="resultArea" class="mt-10 max-w-3xl mx-auto hidden transition-all duration-500 ease-in-out"></div>
+        <div id="resultArea" class="mt-10 max-w-4xl mx-auto hidden transition-all duration-500 ease-in-out"></div>
     </header>
 
+    <!-- Info Section -->
     <main class="max-w-5xl mx-auto px-4 py-12 space-y-20">
         <div class="text-center">
             <h2 class="text-3xl font-bold text-slate-900">נתונים מהשטח</h2>
             <div class="w-16 h-1.5 bg-blue-600 mx-auto mt-4 rounded-full"></div>
-            <p class="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">מתוך עשרות אלפי רשומות פעילות.</p>
         </div>
         <div class="grid md:grid-cols-2 gap-8">
             <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-100 text-center">
-                <div class="h-64 bg-slate-100 rounded-xl flex items-center justify-center mb-4"><span class="text-6xl opacity-20">📊</span></div>
-                <h3 class="text-xl font-bold text-slate-800">יצרנים מובילים</h3>
+                <div class="h-48 bg-slate-100 rounded-xl flex items-center justify-center mb-4"><span class="text-5xl opacity-20">📊</span></div>
+                <h3 class="text-xl font-bold text-slate-800">סטטיסטיקות יצרנים</h3>
             </div>
             <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-100 text-center">
-                <div class="h-64 bg-slate-100 rounded-xl flex items-center justify-center mb-4"><span class="text-6xl opacity-20">📉</span></div>
-                <h3 class="text-xl font-bold text-slate-800">סוגי תקלות</h3>
+                <div class="h-48 bg-slate-100 rounded-xl flex items-center justify-center mb-4"><span class="text-5xl opacity-20">🔧</span></div>
+                <h3 class="text-xl font-bold text-slate-800">מידע טכני</h3>
             </div>
         </div>
     </main>
@@ -120,6 +88,7 @@
 
     <script>
         const dataCache = {};
+        let infoDataCache = null; // To store the big info file once loaded
 
         function checkCar() {
             const inputField = document.getElementById('plateInput');
@@ -136,24 +105,17 @@
                 return;
             }
 
-            // --- YOUR REQUEST: FORCE 8 DIGITS (ADD LEADING ZERO) ---
-            // We convert to 8 digits for consistency, but we will compare nicely later.
-            if (input.length === 7) {
-                console.log("Detecting 7 digit plate. Adding leading zero internally.");
-                input = "0" + input;
-            }
-            // -------------------------------------------------------
+            // Handle 7 vs 8 digits logic
+            if (input.length === 7) input = "0" + input;
 
-            const originalBtnText = btn.innerText;
-            btn.innerHTML = '<div class="loader"></div> טוען...';
+            // UI State
+            btn.innerHTML = '<div class="loader"></div> מחפש...';
             btn.disabled = true;
             inputField.disabled = true;
 
             const lastDigit = input.slice(-1);
-            const fileName = `split_data/data_${lastDigit}.csv`;
-
-            console.log(`Searching for: ${input} (Last digit: ${lastDigit})`);
-            console.log(`File to load: ${fileName}`);
+            const splitFile = `split_data/data_${lastDigit}.csv`;
+            const infoFile = `split_data/recalls_info.csv`; // This file has the contacts
 
             const resetUI = () => {
                 btn.innerText = "בדיקת רכב";
@@ -161,116 +123,188 @@
                 inputField.disabled = false;
             };
 
-            const processData = (data) => {
-                if (!data || data.length === 0) {
-                    console.error("File is empty");
-                    alert("שגיאה: קובץ הנתונים ריק");
-                    resetUI();
-                    return;
+            // STEP 1: Load the car list (split file)
+            const loadSplitFile = () => {
+                if (dataCache[lastDigit]) {
+                    processCarList(dataCache[lastDigit]);
+                } else {
+                    Papa.parse(splitFile, {
+                        download: true, 
+                        header: true, 
+                        skipEmptyLines: true,
+                        complete: (results) => {
+                            dataCache[lastDigit] = results.data;
+                            processCarList(results.data);
+                        },
+                        error: (err) => {
+                            console.error(err);
+                            alert("שגיאה בטעינת הנתונים. וודא שהקבצים הועלו לגיטהאב.");
+                            resetUI();
+                        }
+                    });
                 }
+            };
 
-                // 1. Find Headers (ignoring BOM invisible characters)
-                const firstRow = data[0];
-                const keys = Object.keys(firstRow);
+            // STEP 2: Filter car list and if found, load info file
+            const processCarList = (data) => {
+                const searchInt = parseInt(input, 10);
+                
+                // Find plate column safely
+                const keys = Object.keys(data[0]);
                 const plateKey = keys.find(k => k.includes('MISPAR_RECHEV'));
                 
-                // Fallback keys
-                const recallTypeKey = keys.find(k => k.includes('SUG_RECALL')) || keys.find(k => k.includes('SUG_RECALL_OT')) || 'SUG_RECALL';
-                const issueKey = keys.find(k => k.includes('TEUR_TAKALA')) || keys.find(k => k.includes('SUG_TAKALA')) || 'TEUR_TAKALA';
-                const dateKey = keys.find(k => k.includes('TAARICH_PTICHA')) || 'TAARICH_PTICHA';
-
-                if (!plateKey) {
-                    console.error("Column 'MISPAR_RECHEV' not found. Keys are:", keys);
-                    alert("שגיאה: לא ניתן למצוא את עמודת מספר הרכב בקובץ.");
-                    resetUI();
-                    return;
-                }
-
-                // 2. FILTERING - The Bulletproof Logic
-                // We compare parsed Integers. This means 1000811 == 01000811.
-                const searchInt = parseInt(input, 10); // Turn input "01000811" into number 1000811
+                if (!plateKey) { alert("שגיאת נתונים: חסרה עמודת מספר רכב"); resetUI(); return; }
 
                 const foundVehicles = data.filter(row => {
                     const rowVal = row[plateKey];
-                    if(!rowVal) return false;
-                    
-                    // Turn CSV value into number
-                    const rowInt = parseInt(String(rowVal).trim(), 10);
-                    
-                    // Compare numbers
-                    return rowInt === searchInt;
+                    return rowVal && parseInt(String(rowVal).trim(), 10) === searchInt;
                 });
 
-                console.log(`Found ${foundVehicles.length} matches for ${searchInt}`);
-
-                renderResults(foundVehicles, input, { recallTypeKey, issueKey, dateKey });
-                resetUI();
+                if (foundVehicles.length === 0) {
+                    // Nothing found - show green success message immediately
+                    renderResults([], input); 
+                    resetUI();
+                } else {
+                    // Found something! Now fetch contact info
+                    loadInfoFile(foundVehicles);
+                }
             };
 
-            if (dataCache[lastDigit]) {
-                processData(dataCache[lastDigit]);
-            } else {
-                Papa.parse(fileName, {
-                    download: true,
-                    header: true,
-                    skipEmptyLines: true,
-                    complete: function(results) {
-                        dataCache[lastDigit] = results.data;
-                        processData(results.data);
-                    },
-                    error: function(err) {
-                        console.error("Error loading CSV:", err);
-                        alert('שגיאה בטעינת הנתונים (בדוק שהקובץ קיים בגיטהאב)');
-                        resetUI();
-                    }
+            // STEP 3: Load the detailed Info File
+            const loadInfoFile = (foundVehicles) => {
+                if (infoDataCache) {
+                    mergeAndRender(foundVehicles, infoDataCache);
+                } else {
+                    console.log("Downloading Info File...");
+                    Papa.parse(infoFile, {
+                        download: true,
+                        header: true,
+                        delimiter: '|', // CRITICAL: Info file uses Pipe separator
+                        skipEmptyLines: true,
+                        complete: (results) => {
+                            infoDataCache = results.data;
+                            mergeAndRender(foundVehicles, results.data);
+                        },
+                        error: (err) => {
+                            console.error("Info file error:", err);
+                            // Render what we have even if info file fails
+                            renderResults(foundVehicles, input); 
+                            resetUI();
+                        }
+                    });
+                }
+            };
+
+            // STEP 4: Join the tables
+            const mergeAndRender = (vehicles, infoData) => {
+                const finalData = vehicles.map(v => {
+                    // Find matching row in infoData by RECALL_ID
+                    // We use vague matching because sometimes csvs have invisible spaces
+                    const info = infoData.find(i => String(i.RECALL_ID).trim() === String(v.RECALL_ID).trim());
+                    
+                    return {
+                        ...v, // Keep original data
+                        // Add new data (or default to empty if not found)
+                        YEVUAN_TEUR: info ? info.YEVUAN_TEUR : 'לא ידוע',
+                        TELEPHONE: info ? info.TELEPHONE : '',
+                        WEBSITE: info ? info.WEBSITE : '',
+                        OFEN_TIKUN: info ? info.OFEN_TIKUN : 'פנה ליבואן לקבלת פרטים'
+                    };
                 });
-            }
+                
+                renderResults(finalData, input);
+                resetUI();
+            };
+            
+            // Start the chain
+            loadSplitFile();
         }
 
-        function renderResults(foundVehicles, input, colNames) {
+        function renderResults(foundVehicles, input) {
             const resultDiv = document.getElementById('resultArea');
             resultDiv.classList.remove('hidden');
 
             if(foundVehicles.length > 0) {
                 let html = `
-                    <div class="bg-red-50 border-2 border-red-100 rounded-2xl p-6 md:p-8 text-right shadow-xl animate-fade-in">
-                        <div class="flex items-center mb-4 border-b border-red-100 pb-4">
-                            <div class="bg-red-100 text-red-600 p-3 rounded-full text-2xl ml-4">⚠️</div>
+                    <div class="bg-red-50 border-2 border-red-100 rounded-2xl p-6 shadow-xl animate-fade-in text-right">
+                        <div class="flex items-center border-b border-red-200 pb-4 mb-4">
+                            <span class="text-3xl ml-3">⚠️</span>
                             <div>
-                                <h3 class="font-black text-2xl text-red-800">נמצאו קריאות שירות פתוחות</h3>
-                                <p class="text-red-600 text-sm">רכב מספר: <span class="font-mono font-bold text-lg">${input}</span></p>
+                                <h3 class="text-2xl font-black text-red-800">נמצאו קריאות שירות פתוחות</h3>
+                                <p class="text-red-600">רכב מספר: <span class="font-mono font-bold">${input}</span></p>
                             </div>
                         </div>
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full text-right">
-                                <thead class="text-xs text-red-500 uppercase bg-red-100/50 rounded">
-                                    <tr>
-                                        <th class="px-4 py-3 rounded-r">סוג</th>
-                                        <th class="px-4 py-3">פירוט תקלה</th>
-                                        <th class="px-4 py-3 rounded-l">תאריך</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-red-100">
+                        
+                        <div class="space-y-6">
                 `;
 
-                foundVehicles.forEach(v => {
+                foundVehicles.forEach((v, index) => {
+                    // Detect key names dynamically for the base object just in case
+                    const k = Object.keys(v);
+                    const recallId = v['RECALL_ID'] || v[k.find(key => key.includes('RECALL_ID'))] || '-';
+                    const type = v['SUG_RECALL'] || '-';
+                    const issue = v['TEUR_TAKALA'] || v['SUG_TAKALA'] || '-';
+                    const date = v['TAARICH_PTICHA'] || '-';
+                    const fix = v['OFEN_TIKUN'] || '-';
+                    const importer = v['YEVUAN_TEUR'] || '-';
+                    const phone = v['TELEPHONE'] ? v['TELEPHONE'].replace(/[^0-9*]/g, '') : '';
+                    const website = v['WEBSITE'] || '#';
+
                     html += `
-                        <tr class="hover:bg-red-50 transition">
-                            <td class="px-4 py-3 font-bold text-slate-700">${v[colNames.recallTypeKey] || 'כללי'}</td>
-                            <td class="px-4 py-3 text-slate-600 text-sm">${v[colNames.issueKey] || 'ללא פירוט'}</td>
-                            <td class="px-4 py-3 text-slate-500 text-sm whitespace-nowrap">${v[colNames.dateKey] || '-'}</td>
-                        </tr>
+                        <div class="bg-white rounded-xl border border-red-100 overflow-hidden shadow-sm">
+                            <div class="bg-red-100/50 px-4 py-2 border-b border-red-100 flex justify-between items-center">
+                                <span class="font-bold text-red-800 text-sm">קריאה מס' ${index + 1}</span>
+                                <span class="text-xs bg-white px-2 py-1 rounded border border-red-200 font-mono">ID: ${recallId}</span>
+                            </div>
+                            
+                            <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <p class="text-xs text-gray-500">מהות התקלה</p>
+                                    <p class="font-bold text-gray-800">${issue}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-500">אופן התיקון</p>
+                                    <p class="text-gray-800">${fix}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-500">סוג ריקול</p>
+                                    <p class="text-gray-800">${type}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-500">תאריך פתיחה</p>
+                                    <p class="text-gray-800">${date}</p>
+                                </div>
+                            </div>
+
+                            <!-- Contact Section -->
+                            <div class="bg-slate-50 p-4 border-t border-slate-100">
+                                <p class="text-xs text-gray-500 mb-2">פרטי יבואן: <strong>${importer}</strong></p>
+                                <div class="flex gap-3">
+                                    ${phone ? `
+                                    <a href="tel:${phone}" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg text-center font-bold text-sm flex items-center justify-center gap-2 transition">
+                                        <span>📞</span> חיוג (${v['TELEPHONE']})
+                                    </a>` : ''}
+                                    
+                                    ${website && website.length > 5 ? `
+                                    <a href="${website.startsWith('http') ? website : 'https://'+website}" target="_blank" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-center font-bold text-sm flex items-center justify-center gap-2 transition">
+                                        <span>🌐</span> אתר אינטרנט
+                                    </a>` : ''}
+                                </div>
+                            </div>
+                        </div>
                     `;
                 });
 
-                html += `</tbody></table></div>
-                        <div class="mt-6 bg-white p-4 rounded-xl border border-red-100 flex items-start gap-3">
-                            <span class="text-xl">📞</span>
-                            <p class="text-sm text-slate-600 leading-snug"><strong>גש למוסך היבואן לטיפול בהקדם.</strong></p>
+                html += `
                         </div>
-                    </div>`;
+                        <div class="mt-6 text-center">
+                            <p class="text-sm text-gray-500">חובה לגשת למוסך היבואן לביצוע התיקון.</p>
+                        </div>
+                    </div>
+                `;
                 resultDiv.innerHTML = html;
             } else {
+                // Success State
                 resultDiv.innerHTML = `
                     <div class="bg-emerald-50 border-2 border-emerald-100 rounded-2xl p-8 text-center shadow-xl animate-fade-in">
                         <div class="bg-emerald-100 w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4">
